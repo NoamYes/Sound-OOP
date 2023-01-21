@@ -5,7 +5,7 @@
  <img width=200px height=200px src="https://i.imgur.com/6wj0hh6.jpg" alt="Project logo"></a>
 </p>
 
-<h3 align="center">Project Title</h3>
+<h3 align="center">Classify sound files</h3>
 
 <div align="center">
 
@@ -19,6 +19,9 @@
 Write about 1-2 paragraphs describing the purpose of your project.
 
 ## 🔖 Project structure
+
+The structure of the code is inspired by the greate notebook of using Object Oriented Programming in a data science object:
+https://www.kaggle.com/code/alaasedeeq/object-oriented-programming-for-data-science/notebook
 
 ```
 Project_folder/
@@ -74,3 +77,5 @@ make precommit
 ```
 
 ##  ✍️ Authors
+
+
