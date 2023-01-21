@@ -12,3 +12,7 @@ def main(var_1, var_2):
     """
 
     print(var_1, var_2)
+
+
+if __name__ == "__main__":
+    main("Hello", "World")
