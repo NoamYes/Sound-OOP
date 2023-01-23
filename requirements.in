@@ -1,1 +1,13 @@
 # required packages for the run
+
+python-dotenv
+numpy
+pandas
+matplotlib
+tqdm
+scikit-learn
+seaborn
+
+# required for the data feature engineering
+
+librosa

@@ -1,18 +1,32 @@
 """
 Module docstring
 """
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from information import Information
+from pre_processing import PreProcessing
 
 
-def main(var_1, var_2):
-    """Hello this is the doc string
+def main():
+    """This is the main script of a dataScience project"""
 
-    Args:
-        var_1 (_type_): _description_
-        var_2 (_type_): _description_
-    """
+    ENV = os.getenv("ENV")
+    TRAIN_PATH = os.getenv("TRAIN_PATH")
 
-    print(var_1, var_2)
+    #%% load data
+    train = pd.read_csv("data/train.csv")
+
+    info = Information(train)
+    info.show_basic_info(train)
+    info.show_manual_info()
+
+    pre_processing = PreProcessing(TRAIN_PATH)
+    pre_processing.extractFeatures()
+    #%%
 
 
 if __name__ == "__main__":
-    main("Hello", "World")
+    main()
+
+# %%
