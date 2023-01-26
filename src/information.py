@@ -8,9 +8,8 @@ class Information:
     This class shows some information about the dataset
     """
 
-    def __init__(self, data):
+    def __init__(self):
 
-        self.data = data
         print()
         print("Information object is created")
         print()
@@ -51,6 +50,7 @@ class Information:
         ----------
         Information about the DataFrame
         """
+        self.data = data
         feature_dtypes = self.data.dtypes
         self.missing_values = self.get_missing_values(self.data)
         feature_names = self.missing_values.index.values

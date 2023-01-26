@@ -6,6 +6,8 @@ import os
 import pandas as pd
 from information import Information
 from pre_processing import PreProcessing
+from prepare_data import PrepareData
+from sound_oop import SoundObjectOriented
 
 
 def main():
@@ -13,17 +15,23 @@ def main():
 
     ENV = os.getenv("ENV")
     TRAIN_PATH = os.getenv("TRAIN_PATH")
+    TEST_PATH = os.getenv("TRAIN_PATH")
 
     #%% load data
     train = pd.read_csv("data/train.csv")
+    test = pd.read_csv("data/test_post_competition.csv")
 
-    info = Information(train)
-    info.show_basic_info(train)
-    info.show_manual_info()
+    #%% Load raw data and extract features
+    prepare_data = PrepareData()
+    train_extracted = prepare_data.extract_features(TRAIN_PATH, loadPreComputed=False)
 
-    pre_processing = PreProcessing(TRAIN_PATH)
-    pre_processing.extractFeatures()
     #%%
+
+    sound_oop = SoundObjectOriented()
+    sound_oop.add_data(train, test, index_name="fname")
+    sound_oop.information()
+    sound_oop.pre_processing()
+    sound_oop.information()
 
 
 if __name__ == "__main__":

@@ -1,12 +1,11 @@
 """Module provide PreProcessing class"""
 
 import os
+import pandas as pd
 from utils.sound_features import get_mfcc_features
 
-from sklearn.preprocessing import LabelEncoder
 
-
-class PreProcessing:
+class PrepareData:
     """
     This class prepares the data berfore applying ML
     """
@@ -20,7 +19,7 @@ class PreProcessing:
         print("pre-processing object is created")
         print()
 
-    def extract_features(self, data_files_directory):
+    def extract_features(self, data_files_directory, loadPreComputed=False):
         """
         This function extracts the features you want from the raw data.
         ...
@@ -34,15 +33,25 @@ class PreProcessing:
         ----------
         A new dataset with the extracted features.
         """
+        if loadPreComputed:
+            extracted_features = pd.read_csv("data/extracted_features.csv")
+            return extracted_features
         self.data_directory = data_files_directory
         extracted_features = []
+        file_names = []
         for filename in os.listdir(self.data_directory):
             f = os.path.join(self.data_directory, filename)
             # checking if it is a file
             if os.path.isfile(f):
                 mfcc_features = get_mfcc_features(f)
                 extracted_features.append(mfcc_features)
-        return extracted_features
+                file_names.append(filename)
+        # creating a dataframe from the extracted features and file names
+        ex_dic = {"fname": file_names, "mfcc_features": extracted_features}
+        cols = ["fname", "mfcc_features"]
+        train_features_pd = pd.DataFrame(ex_dic, columns=cols)
+        train_features_pd.set_index("fname", inplace=True)
+        return train_features_pd
 
     # def drop(self, data, drop_strategies):
     #     """
