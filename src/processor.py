@@ -4,9 +4,9 @@ from pre_processing import PreProcessing
 
 
 class Processor:
-    def __init__(self, preProcessor):
+    def __init__(self):
         self.data = None
-        self._preprocessor = preProcessor
+        self._preprocessor = PreProcessing()
 
     def _process(self, data, ntrain):
 
@@ -33,14 +33,14 @@ class Processor:
         # self.data = self._preprocessor.fillna(self.ntrain, fill_strategies)
 
         # feature engineering
-        self.data = self._preprocessor.extract_features()
+        # self.data = self._preprocessor.extract_features()
 
         # label encoder
-        self.data = self._preprocessor.label_encoder(cat_cols)
+        # self.data = self._preprocessor.label_encoder(cat_cols)
 
         # normalizing
         #         self.data = self._preprocessor.norm_data(self.data, num_cols)
 
         # get dummies
-        self.data = self._preprocessor.get_dummies(cat_cols)
+        # self.data = self._preprocessor.get_dummies(cat_cols)
         return self.data

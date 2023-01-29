@@ -4,6 +4,7 @@ import os
 from utils.sound_features import get_mfcc_features
 
 from sklearn.preprocessing import LabelEncoder
+import pandas as pd
 
 
 class PreProcessing:
@@ -198,28 +199,28 @@ class PreProcessing:
 
         return self.data
 
-    # def get_dummies(self, columns):
-    #     """
-    #     This function is used to convert the data to dummies values.
-    #     ...
-    #     Attributes
-    #     ----------
-    #     data : Pandas DataFrame
-    #         The data you want to convert.
+    def get_dummies(self, columns):
+        """
+        This function is used to convert the data to dummies values.
+        ...
+        Attributes
+        ----------
+        data : Pandas DataFrame
+            The data you want to convert.
 
-    #     Returns
-    #     ----------
-    #     A dataset with dummies.
-    #     """
+        Returns
+        ----------
+        A dataset with dummies.
+        """
 
-    #     # convert our categorical columns to dummies
-    #     for col in columns:
-    #         dumm = pd.get_dummies(self.data[col], prefix=col, dtype=int)
-    #         self.data = pd.concat([self.data, dumm], axis=1)
+        # convert our categorical columns to dummies
+        for col in columns:
+            dumm = pd.get_dummies(self.data[col], prefix=col, dtype=int)
+            self.data = pd.concat([self.data, dumm], axis=1)
 
-    #     self.data.drop(columns, axis=1, inplace=True)
+        self.data.drop(columns, axis=1, inplace=True)
 
-    #     return self.data
+        return self.data
 
     # def norm_data(self, columns):
     #     """

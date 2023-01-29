@@ -2,6 +2,7 @@
 
 import os
 import pandas as pd
+import numpy as np
 from utils.sound_features import get_mfcc_features
 
 
@@ -19,7 +20,7 @@ class PrepareData:
         print("pre-processing object is created")
         print()
 
-    def extract_features(self, data_files_directory, loadPreComputed=False):
+    def extract_features(self, data_files_directory, data_name, loadPreComputed=False):
         """
         This function extracts the features you want from the raw data.
         ...
@@ -33,8 +34,11 @@ class PrepareData:
         ----------
         A new dataset with the extracted features.
         """
-        if loadPreComputed:
-            extracted_features = pd.read_csv("data/extracted_features.csv")
+        if loadPreComputed and os.path.exists("data/extracted_features.csv"):
+            extracted_features = pd.read_csv("data/extracted_features.csv", sep=",")
+            extracted_features["mfcc_features"] = np.squeeze(
+                extracted_features["mfcc_features"]
+            ).str.split(",")
             return extracted_features
         self.data_directory = data_files_directory
         extracted_features = []
@@ -44,13 +48,14 @@ class PrepareData:
             # checking if it is a file
             if os.path.isfile(f):
                 mfcc_features = get_mfcc_features(f)
-                extracted_features.append(mfcc_features)
+                extracted_features.append(mfcc_features.reshape((-1, 1)))
                 file_names.append(filename)
         # creating a dataframe from the extracted features and file names
         ex_dic = {"fname": file_names, "mfcc_features": extracted_features}
         cols = ["fname", "mfcc_features"]
         train_features_pd = pd.DataFrame(ex_dic, columns=cols)
-        train_features_pd.set_index("fname", inplace=True)
+        train_features_pd_cpy = train_features_pd.set_index("fname", inplace=False)
+        train_features_pd_cpy.to_csv("data/" + data_name + "_extracted_features.csv")
         return train_features_pd
 
     # def drop(self, data, drop_strategies):
