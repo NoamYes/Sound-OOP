@@ -130,8 +130,8 @@ class ML:
             raise TypeError("Add models first before fitting")
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.train.to_numpy(),
-            self.ytrain.to_numpy(),
+            self.train,
+            self.ytrain,
             test_size=self.test_size,
             random_state=2021,
         )

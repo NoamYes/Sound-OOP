@@ -34,8 +34,9 @@ class SoundObjectOriented:
         self.test = X_test
 
         # concatinating the whole data
-        self.data = self.concat_data(self.train, self.test, index_name)
-        self.orig_data = self.data.copy()
+        # self.data = self.concat_data(self.train, self.test, index_name)
+        # self.orig_data = self.data.copy()
+        self.data = X_train
         print()
         print("Your data has been added")
         print()
@@ -64,8 +65,9 @@ class SoundObjectOriented:
         """
         preprocess the data before applying Ml algorithms
         """
-        self.data = self._processor._process(self.data, self.ntrain)
-
+        self.data, self.y_train = self._processor._process(
+            self.data, self.y_train, self.ntrain
+        )
         print()
         print("Data has been Pre-Processed")
         print()

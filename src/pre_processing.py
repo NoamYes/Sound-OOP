@@ -5,6 +5,7 @@ from utils.sound_features import get_mfcc_features
 
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
+import numpy as np
 
 
 class PreProcessing:
@@ -21,55 +22,31 @@ class PreProcessing:
         print("pre-processing object is created")
         print()
 
-    def extract_features(self, data_files_directory):
+    def drop(self, data, drop_strategies):
         """
-        This function extracts the features you want from the raw data.
+        This function is used to drop a column or row from the dataset.
         ...
         Attributes
         ----------
-        data : train directory
-            The data path you want to load from
-        features : A list of features to extract
+        data : Pandas DataFrame
+            The data you want to drop data from.
+        drop_strategies : A list of tuples, each tuple has the data to drop,
+        and the axis(0 or 1)
 
         Returns
         ----------
-        A new dataset with the extracted features.
+        A new dataset after dropping the unwanted data.
         """
-        self.data_directory = data_files_directory
-        extracted_features = []
-        for filename in os.listdir(self.data_directory):
-            f = os.path.join(self.data_directory, filename)
-            # checking if it is a file
-            if os.path.isfile(f):
-                mfcc_features = get_mfcc_features(f)
-                extracted_features.append(mfcc_features)
-        return extracted_features
 
-    # def drop(self, data, drop_strategies):
-    #     """
-    #     This function is used to drop a column or row from the dataset.
-    #     ...
-    #     Attributes
-    #     ----------
-    #     data : Pandas DataFrame
-    #         The data you want to drop data from.
-    #     drop_strategies : A list of tuples, each tuple has the data to drop,
-    #     and the axis(0 or 1)
+        self.data = data
 
-    #     Returns
-    #     ----------
-    #     A new dataset after dropping the unwanted data.
-    #     """
-
-    #     self.data = data
-
-    #     for columns, ax in drop_strategies:
-    #         if len(columns) == 1:
-    #             self.data = self.data.drop(labels=column, axis=ax)
-    #         else:
-    #             for column in columns:
-    #                 self.data = self.data.drop(labels=column, axis=ax)
-    #     return self.data
+        # for columns, ax in drop_strategies:
+        #     if len(columns) == 1:
+        #         self.data = self.data.drop(labels=columns[0], axis=ax)
+        #     else:
+        #         for column in columns:
+        #             self.data = self.data.drop(labels=column, axis=ax)
+        return np.vstack(np.squeeze(self.data.to_numpy()))
 
     # def fillna(self, ntrain, fill_strategies):
     #     """
@@ -174,7 +151,7 @@ class PreProcessing:
 
     #     return self.data
 
-    def label_encoder(self, columns):
+    def label_encoder(self, df, columns):
         """
         This function is used to encode the data to categorical values to benefit from increasing or
         decreasing to build the model
@@ -193,11 +170,11 @@ class PreProcessing:
         # Convert all categorical collumns to numeric values
         lbl = LabelEncoder()
 
-        self.data[columns] = self.data[columns].apply(
+        df[columns] = df[columns].apply(
             lambda x: lbl.fit_transform(x.astype(str)).astype(int)
         )
 
-        return self.data
+        return df
 
     def get_dummies(self, columns):
         """
@@ -222,23 +199,23 @@ class PreProcessing:
 
         return self.data
 
-    # def norm_data(self, columns):
-    #     """
-    #     This function is used to normalize the data.
-    #     ...
-    #     Attributes
-    #     ----------
-    #     data : Pandas DataFrame
-    #         The data you want to normalize.
+    def norm_data(self, columns):
+        #     """
+        #     This function is used to normalize the data.
+        #     ...
+        #     Attributes
+        #     ----------
+        #     data : Pandas DataFrame
+        #         The data you want to normalize.
 
-    #     Returns
-    #     ----------
-    #     A new normalized dataset.
-    #     """
+        #     Returns
+        #     ----------
+        #     A new normalized dataset.
+        #     """
 
-    #     # Normalize our numeric data
-    #     self.data[columns] = self.data[columns].apply(
-    #         lambda x: np.log1p(x)
-    #     )  # Normalize the data with Logarithms
+        #     # Normalize our numeric data
+        self.data[columns] = self.data[columns].apply(
+            lambda x: np.log1p(x)
+        )  # Normalize the data with Logarithms
 
-    #     return self.data
+        return self.data

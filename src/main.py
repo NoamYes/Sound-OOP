@@ -8,6 +8,7 @@ from information import Information
 from pre_processing import PreProcessing
 from prepare_data import PrepareData
 from sound_oop import SoundObjectOriented
+from utils.sound_features import get_mfcc_features_2
 
 
 def main():
@@ -37,14 +38,18 @@ def main():
     test_extracted = prepare_data.extract_features(
         TEST_PATH, "test", loadPreComputed=False
     )
-    y_train = train.loc[train_extracted["fname"].to_numpy()]["label"]
+    # train_extracted = train["fname"].apply(get_mfcc_features_2, path=TRAIN_PATH)
+    # print("done loading train mfcc")
+    # test_extracted = test["fname"].apply(get_mfcc_features_2, path=TEST_PATH)
+    # print("done loading test mfcc")
+    y_train = train.loc[train_extracted.index.to_numpy()]
     #%%
 
     sound_oop = SoundObjectOriented()
     sound_oop.add_data(train_extracted, test_extracted, y_train, index_name="fname")
-    sound_oop.information()
+    # sound_oop.information()
     sound_oop.pre_processing()
-    sound_oop.information()
+    # sound_oop.information()
 
     ML = sound_oop.ml(sound_oop)
     ML.show_available_algorithms()
