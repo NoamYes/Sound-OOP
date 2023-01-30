@@ -33,10 +33,10 @@ def main():
     #%% Load raw data and extract features
     prepare_data = PrepareData()
     train_extracted = prepare_data.extract_features(
-        TRAIN_PATH, "train", loadPreComputed=False
+        TRAIN_PATH, "train", loadPreComputed=False, save=True
     )
     test_extracted = prepare_data.extract_features(
-        TEST_PATH, "test", loadPreComputed=False
+        TEST_PATH, "test", loadPreComputed=False, save=True
     )
     # train_extracted = train["fname"].apply(get_mfcc_features_2, path=TRAIN_PATH)
     # print("done loading train mfcc")
