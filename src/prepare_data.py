@@ -46,10 +46,10 @@ class PrepareData:
         A new dataset with the extracted features.
         """
         if loadPreComputed and os.path.exists(
-            save_path + data_name + "_extracted_features.csv"
+            save_path + data_name + "_extracted_features.feather"
         ):
-            extracted_features = pd.read_csv(
-                save_path + data_name + "_extracted_features.csv", sep=","
+            extracted_features = pd.read_feather(
+                save_path + data_name + "_extracted_features.feather"
             )
             extracted_features["mfcc_features"] = np.squeeze(
                 extracted_features["mfcc_features"]
@@ -70,9 +70,11 @@ class PrepareData:
         # creating a dataframe from the extracted features and file names
         ex_dic = {"fname": file_names, "mfcc_features": extracted_features}
         cols = ["fname", "mfcc_features"]
-        train_features_pd = pd.DataFrame(ex_dic, columns=cols)
+        features_pd = pd.DataFrame(ex_dic, columns=cols)
         # creating a series from the extracted features and file names
         # series = pd.Series(extracted_features, index=file_names)
         if save:
-            train_features_pd.to_csv(save_path + data_name + "_extracted_features.csv")
-        return train_features_pd
+            features_pd.to_feather(
+                save_path + data_name + "_extracted_features.feather"
+            )
+        return features_pd

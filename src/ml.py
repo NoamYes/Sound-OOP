@@ -151,7 +151,7 @@ class ML:
 
         for name in self.reg_models:
             # fitting the model
-            model = self.reg_models[name].fit(self.X_train, self.y_train)
+            model = self.reg_models[name].fit(self.X_train, self.y_train.values)
 
             # make predictions with train and test datasets
             y_pred_train = model.predict(self.X_train)

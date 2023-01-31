@@ -9,6 +9,8 @@ scikit-learn
 seaborn
 plotly
 xgboost
+pyarrow
+
 
 # required for the data feature engineering
 
