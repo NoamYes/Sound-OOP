@@ -17,6 +17,7 @@ def main():
     ENV = os.getenv("ENV")
     TRAIN_PATH = os.getenv("TRAIN_PATH")
     TEST_PATH = os.getenv("TRAIN_PATH")
+    DATA_PATH = os.getenv("DATA_PATH")
 
     #%% load data
     train = pd.read_csv("data/train.csv")
@@ -33,10 +34,10 @@ def main():
     #%% Load raw data and extract features
     prepare_data = PrepareData()
     train_extracted = prepare_data.extract_features(
-        TRAIN_PATH, "train", loadPreComputed=False, save=True
+        TRAIN_PATH, "train", loadPreComputed=False, save=True, save_path=DATA_PATH
     )
     test_extracted = prepare_data.extract_features(
-        TEST_PATH, "test", loadPreComputed=False, save=True
+        TEST_PATH, "test", loadPreComputed=False, save=True, save_path=DATA_PATH
     )
     # train_extracted = train["fname"].apply(get_mfcc_features_2, path=TRAIN_PATH)
     # print("done loading train mfcc")

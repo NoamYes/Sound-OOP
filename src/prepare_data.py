@@ -25,7 +25,12 @@ class PrepareData:
         print()
 
     def extract_features(
-        self, data_files_directory, data_name, loadPreComputed=False, save=False
+        self,
+        data_files_directory,
+        data_name,
+        loadPreComputed=False,
+        save=False,
+        save_path="data/",
     ):
         """
         This function extracts the features you want from the raw data.
@@ -66,5 +71,5 @@ class PrepareData:
         # creating a series from the extracted features and file names
         # series = pd.Series(extracted_features, index=file_names)
         if save:
-            train_features_pd.to_csv("data/" + data_name + "_extracted_features.csv")
+            train_features_pd.to_csv(save_path + data_name + "_extracted_features.csv")
         return train_features_pd
