@@ -3,9 +3,11 @@
 import os
 import pandas as pd
 import numpy as np
-from utils.sound_features import get_mfcc_features, truncate_or_pad_audio
+from tqdm import tqdm
 import librosa
 import matplotlib as plt
+
+from utils.sound_features import get_mfcc_features, truncate_or_pad_audio
 
 
 class PrepareData:
@@ -47,7 +49,7 @@ class PrepareData:
         self.data_directory = data_files_directory
         extracted_features = []
         file_names = []
-        for filename in os.listdir(self.data_directory):
+        for filename in tqdm(os.listdir(self.data_directory)):
             f = os.path.join(self.data_directory, filename)
             # checking if it is a file
             if os.path.isfile(f):
