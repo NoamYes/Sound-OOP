@@ -45,8 +45,12 @@ class PrepareData:
         ----------
         A new dataset with the extracted features.
         """
-        if loadPreComputed and os.path.exists("data/extracted_features.csv"):
-            extracted_features = pd.read_csv("data/extracted_features.csv", sep=",")
+        if loadPreComputed and os.path.exists(
+            save_path + data_name + "_extracted_features.csv"
+        ):
+            extracted_features = pd.read_csv(
+                save_path + data_name + "_extracted_features.csv", sep=","
+            )
             extracted_features["mfcc_features"] = np.squeeze(
                 extracted_features["mfcc_features"]
             ).str.split(",")
