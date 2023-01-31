@@ -71,7 +71,6 @@ class PrepareData:
         ex_dic = {"fname": file_names, "mfcc_features": extracted_features}
         cols = ["fname", "mfcc_features"]
         train_features_pd = pd.DataFrame(ex_dic, columns=cols)
-        train_features_pd.set_index("fname", inplace=True)
         # creating a series from the extracted features and file names
         # series = pd.Series(extracted_features, index=file_names)
         if save:

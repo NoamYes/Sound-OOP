@@ -34,16 +34,16 @@ def main():
     #%% Load raw data and extract features
     prepare_data = PrepareData()
     train_extracted = prepare_data.extract_features(
-        TRAIN_PATH, "train", loadPreComputed=False, save=True, save_path=DATA_PATH
+        TRAIN_PATH, "train", loadPreComputed=True, save=True, save_path=DATA_PATH
     )
     test_extracted = prepare_data.extract_features(
-        TEST_PATH, "test", loadPreComputed=False, save=True, save_path=DATA_PATH
+        TEST_PATH, "test", loadPreComputed=True, save=True, save_path=DATA_PATH
     )
     # train_extracted = train["fname"].apply(get_mfcc_features_2, path=TRAIN_PATH)
     # print("done loading train mfcc")
     # test_extracted = test["fname"].apply(get_mfcc_features_2, path=TEST_PATH)
     # print("done loading test mfcc")
-    y_train = train.loc[train_extracted.index.to_numpy()]
+    y_train = train.loc[train_extracted["fname"].to_numpy()]
     #%%
 
     sound_oop = SoundObjectOriented()
