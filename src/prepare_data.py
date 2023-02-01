@@ -48,13 +48,14 @@ class PrepareData:
         if loadPreComputed and os.path.exists(
             save_path + data_name + "_extracted_features.feather"
         ):
-            extracted_features = pd.read_feather(
-                save_path + data_name + "_extracted_features.feather"
+            features_pd = pd.read_pickle(
+                save_path + data_name + "_extracted_features.pickle"
             )
-            extracted_features["mfcc_features"] = np.squeeze(
-                extracted_features["mfcc_features"]
-            ).str.split(",")
-            return extracted_features
+
+            features_pd["mfcc_features"] = features_pd["mfcc_features"].apply(
+                lambda elem: np.array(elem).flatten()
+            )
+            return features_pd
         self.data_directory = data_files_directory
         extracted_features = []
         file_names = []
@@ -64,8 +65,8 @@ class PrepareData:
             if os.path.isfile(f):
                 y, sr = librosa.load(f, res_type="kaiser_fast")
                 y = truncate_or_pad_audio(y, sr)
-                mfcc_features = get_mfcc_features(y=y, sr=sr, n_mfcc=20)
-                extracted_features.append(mfcc_features.reshape((-1, 1)).flatten())
+                mfcc_features = get_mfcc_features(y=y, sr=sr, n_mfcc=20).tolist()
+                extracted_features.append(mfcc_features)
                 file_names.append(filename)
         # creating a dataframe from the extracted features and file names
         ex_dic = {"fname": file_names, "mfcc_features": extracted_features}
@@ -74,7 +75,9 @@ class PrepareData:
         # creating a series from the extracted features and file names
         # series = pd.Series(extracted_features, index=file_names)
         if save:
-            features_pd.to_feather(
-                save_path + data_name + "_extracted_features.feather"
-            )
+            features_pd.to_pickle(save_path + data_name + "_extracted_features.pickle")
+
+        features_pd["mfcc_features"] = features_pd["mfcc_features"].apply(
+            lambda elem: np.array(elem).flatten()
+        )
         return features_pd
