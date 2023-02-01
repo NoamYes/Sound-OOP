@@ -39,13 +39,14 @@ def main():
     test_extracted = prepare_data.extract_features(
         TEST_PATH, "test", loadPreComputed=True, save=True, save_path=DATA_PATH + "/"
     )
-    y_train = train.loc[train_extracted["fname"].to_numpy()]
+    train_extracted["label"] = train.loc[train_extracted["fname"].to_numpy()]["label"]
+    test_extracted["label"] = test.loc[test_extracted["fname"].to_numpy()]["label"]
     train_extracted.set_index("fname", inplace=True)
     test_extracted.set_index("fname", inplace=True)
     #%%
 
     sound_oop = SoundObjectOriented()
-    sound_oop.add_data(train_extracted, test_extracted, y_train, index_name="fname")
+    sound_oop.add_data(train_extracted, test_extracted, index_name="fname")
     # sound_oop.information()
     sound_oop.pre_processing()
     # sound_oop.information()

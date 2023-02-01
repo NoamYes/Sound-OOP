@@ -27,7 +27,7 @@ import xgboost as xgb
 
 
 class ML:
-    def __init__(self, data, ytrain, testID, test_size, ntrain):
+    def __init__(self, data, y_train, testID, test_size, ntrain):
 
         print()
         print("Machine Learning object is created")
@@ -39,7 +39,7 @@ class ML:
         self.train = self.data[: self.ntrain]
         self.test = self.data[self.ntrain :]
         self.testID = testID
-        self.ytrain = ytrain
+        self.y_train = y_train
 
         self.reg_models = {}
 
@@ -50,12 +50,12 @@ class ML:
                 ElasticNet(alpha=0.0005, l1_ratio=0.9),
             ),
             "Kernel Ridge": KernelRidge(),  # Kernel Ridge model(Regularized model)
-            "Bayesian Ridge": BayesianRidge(
-                compute_score=True,  # Bayesian Ridge model
-                fit_intercept=True,
-                n_iter=200,
-                normalize=False,
-            ),
+            # "Bayesian Ridge": BayesianRidge(
+            #     compute_score=True,  # Bayesian Ridge model
+            #     fit_intercept=True,
+            #     n_iter=200,
+            #     normalize=False,
+            # ),
             "Lasso": make_pipeline(
                 RobustScaler(),
                 Lasso(
@@ -131,7 +131,7 @@ class ML:
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.train,
-            self.ytrain,
+            self.y_train,
             test_size=self.test_size,
             random_state=2021,
         )
@@ -151,7 +151,7 @@ class ML:
 
         for name in self.reg_models:
             # fitting the model
-            model = self.reg_models[name].fit(self.X_train, self.y_train.values)
+            model = self.reg_models[name].fit(self.X_train, self.y_train)
 
             # make predictions with train and test datasets
             y_pred_train = model.predict(self.X_train)
@@ -264,13 +264,13 @@ class ML:
         for name, _ in models_name.items():
             model = self.base_models[name]
             r_2 = cross_val_score(
-                model, self.train, self.ytrain, scoring="r2", cv=kfold  # R-Squared
+                model, self.train, self.y_train, scoring="r2", cv=kfold  # R-Squared
             )
             rms = np.sqrt(
                 -cross_val_score(
                     model,
                     self.train,
-                    self.ytrain,  # RMSE
+                    self.y_train,  # RMSE
                     cv=kfold,
                     scoring="neg_mean_squared_error",
                 )
@@ -467,7 +467,7 @@ class ML:
         print(30 * "=")
         print()
         self.best_model = self.base_models[self.best_model_name]
-        self.best_model.fit(self.train, self.ytrain)
+        self.best_model.fit(self.train, self.y_train)
         print(self.best_model_name, " is fitted to the data!")
         print()
         print(30 * "=")

@@ -46,7 +46,7 @@ class PreProcessing:
         #     else:
         #         for column in columns:
         #             self.data = self.data.drop(labels=column, axis=ax)
-        return np.vstack(np.squeeze(self.data.to_numpy()))
+        return self.data
 
     # def fillna(self, ntrain, fill_strategies):
     #     """
@@ -213,9 +213,20 @@ class PreProcessing:
         #     A new normalized dataset.
         #     """
 
+        max = np.vstack(np.squeeze(self.data[columns].to_numpy())).max()
+        min = np.vstack(np.squeeze(self.data[columns].to_numpy())).min()
         #     # Normalize our numeric data
         self.data[columns] = self.data[columns].apply(
-            lambda x: np.log1p(x)
+            lambda arr: (arr - min) / (max - min + 1e-6) - 0.5
         )  # Normalize the data with Logarithms
 
+        # def minmax_normalize(elem, min, max):
+        #     """
+        #     Scale data in range [0, 1]
+        #     Input: dile column features
+        #     """
+        #     elem = (elem - min) / (max - min + 1e-6)
+        #     return elem - 0.5
+
+        # normalized_data = self.data.apply(minmax_normalize, axis=1)
         return self.data

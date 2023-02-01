@@ -1,5 +1,6 @@
 """Module provide Preprocessor class"""
 
+import numpy as np
 from pre_processing import PreProcessing
 
 
@@ -9,10 +10,9 @@ class Processor:
         self.y = None
         self._preprocessor = PreProcessing()
 
-    def _process(self, data, y, ntrain):
+    def _process(self, data, ntrain):
 
         self.data = data
-        self.y = y
         self.ntrain = ntrain
 
         cols_drop = ["fname"]
@@ -37,11 +37,14 @@ class Processor:
         # self.data = self._preprocessor.extract_features()
 
         # label encoder
-        self.y = self._preprocessor.label_encoder(self.y, cat_cols)
-
-        # normalizing
-        # self.data = self._preprocessor.norm_data(num_cols)
+        self.data = self._preprocessor.label_encoder(self.data, cat_cols)
+        self.y_train = self.data["label"].to_numpy()
 
         # get dummies
-        # self.data = self._preprocessor.get_dummies(cat_cols)
-        return self.data, self.y
+        self.data = self._preprocessor.get_dummies(cat_cols)
+
+        # normalizing
+        self.data = self._preprocessor.norm_data(num_cols)
+
+        data_arr = np.vstack(np.squeeze(self.data.to_numpy()))
+        return data_arr, self.y_train

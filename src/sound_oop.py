@@ -25,11 +25,10 @@ class SoundObjectOriented:
         print("SoundObjectOriented object is created")
         print()
 
-    def add_data(self, X_train, X_test, y_train, index_name):
+    def add_data(self, X_train, X_test, index_name):
         # properties
         self.ntrain = X_train.shape[0]
         self.testID = X_test.reset_index()  # .drop("index", axis=1)["Id"]
-        self.y_train = y_train  # train["label"]  # .apply(lambda x: np.log1p(x))
         self.train = X_train  # .drop("label", axis=1)
         self.test = X_test
 
@@ -65,19 +64,18 @@ class SoundObjectOriented:
         """
         preprocess the data before applying Ml algorithms
         """
-        self.data, self.y_train = self._processor._process(
-            self.data, self.y_train, self.ntrain
-        )
+        self.data, self.y_train = self._processor._process(self.data, self.ntrain)
         print()
         print("Data has been Pre-Processed")
         print()
+        return self.data, self.y_train
 
     class visualizer:
         def __init__(self, House_Price_OOP):
 
             self.hp = House_Price_OOP
             self.data = self.hp.data
-            self.ytrain = self.hp.y_train
+            self.y_train = self.hp.y_train
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
             self.data_vis = data_visualization
@@ -95,12 +93,12 @@ class SoundObjectOriented:
 
             self.hp = House_Price_OOP
             self.data = self.hp.data
-            self.ytrain = self.hp.y_train
+            self.y_train = self.hp.y_train
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
             self._ML_ = ML(
                 data=self.data,
-                ytrain=self.ytrain,
+                y_train=self.y_train,
                 testID=self.testID,
                 test_size=0.2,
                 ntrain=self.ntrain,
