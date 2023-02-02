@@ -60,6 +60,7 @@ def main():
     ML.show_available_algorithms()
     ML.init_regressors("all")
     ML.train_test_validation()
+    ML.visualize_train_test()
 
 
 if __name__ == "__main__":

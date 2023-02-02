@@ -17,11 +17,11 @@ from sklearn.model_selection import (
     cross_val_score,
 )
 from sklearn.preprocessing import StandardScaler, LabelEncoder, RobustScaler
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.linear_model import ElasticNet, Lasso, BayesianRidge, LassoLarsIC
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import xgboost as xgb
 
@@ -45,23 +45,23 @@ class ML:
 
         # define models to test:
         self.base_models = {
-            "Elastic Net": make_pipeline(
-                RobustScaler(),  # Elastic Net model(Regularized model)
-                ElasticNet(alpha=0.0005, l1_ratio=0.9),
-            ),
-            "Kernel Ridge": KernelRidge(),  # Kernel Ridge model(Regularized model)
-            # "Bayesian Ridge": BayesianRidge(
-            #     compute_score=True,  # Bayesian Ridge model
-            #     fit_intercept=True,
-            #     n_iter=200,
-            #     normalize=False,
+            # "Elastic Net": make_pipeline(
+            #     RobustScaler(),  # Elastic Net model(Regularized model)
+            #     ElasticNet(alpha=0.0005, l1_ratio=0.9),
             # ),
-            "Lasso": make_pipeline(
-                RobustScaler(),
-                Lasso(
-                    alpha=0.0005, random_state=2021  # Lasso model(Regularized model)
-                ),
-            ),
+            # "Kernel Ridge": KernelRidge(),  # Kernel Ridge model(Regularized model)
+            # # "Bayesian Ridge": BayesianRidge(
+            # #     compute_score=True,  # Bayesian Ridge model
+            # #     fit_intercept=True,
+            # #     n_iter=200,
+            # #     normalize=False,
+            # # ),
+            # "Lasso": make_pipeline(
+            #     RobustScaler(),
+            #     Lasso(
+            #         alpha=0.0005, random_state=2021  # Lasso model(Regularized model)
+            #     ),
+            # ),
             # "Lasso Lars Ic": LassoLarsIC(
             #     criterion="aic",  # LassoLars IC model
             #     fit_intercept=True,
@@ -70,21 +70,21 @@ class ML:
             #     precompute="auto",
             #     verbose=False,
             # ),
-            "Random Forest": RandomForestRegressor(
-                n_estimators=300
-            ),  # Random Forest model
-            "Svm": SVR(),  # Support Vector Machines
-            "Xgboost": XGBRegressor(),  # XGBoost model
+            # "Random Forest": RandomForestClassifier(
+            #     n_estimators=300
+            # ),  # Random Forest model
+            # # "Svm": SVR(),  # Support Vector Machines
+            # "Xgboost": XGBClassifier(),  # XGBoost model
             "Gradient Boosting": make_pipeline(
                 StandardScaler(),
-                GradientBoostingRegressor(
+                GradientBoostingClassifier(
                     n_estimators=3000,  # GradientBoosting model
                     learning_rate=0.005,
                     max_depth=4,
                     max_features="sqrt",
                     min_samples_leaf=15,
                     min_samples_split=10,
-                    loss="huber",
+                    # loss="log_loss",
                     random_state=2021,
                 ),
             ),

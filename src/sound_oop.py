@@ -126,7 +126,7 @@ class SoundObjectOriented:
                 num_models=num_models, n_folds=n_folds, show=show_results
             )
 
-        def visualize_trai_test(
+        def visualize_train_test(
             self, metrics=["r_squared", "adjusted r_squared", "mae", "mse", "rmse"]
         ):
 
