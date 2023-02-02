@@ -7,7 +7,8 @@ from pre_processing import PreProcessing
 class Processor:
     def __init__(self):
         self.data = None
-        self.y = None
+        self.y_train = None
+        self.X_train = None
         self._preprocessor = PreProcessing()
 
     def _process(self, data, ntrain):
@@ -45,6 +46,5 @@ class Processor:
 
         # normalizing
         self.data = self._preprocessor.norm_data(num_cols)
-
-        data_arr = np.vstack(np.squeeze(self.data.to_numpy()))
-        return data_arr, self.y_train
+        self.X_train = np.vstack(np.squeeze(self.data[num_cols].to_numpy()))
+        return self.data, self.y_train, self.X_train

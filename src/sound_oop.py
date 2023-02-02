@@ -16,6 +16,7 @@ class SoundObjectOriented:
         self.ntrain = None
         self.testID = None
         self.y_train = None
+        self.X_train = None
         self.train = None
         self.test = None
         self._info = Information()
@@ -64,11 +65,13 @@ class SoundObjectOriented:
         """
         preprocess the data before applying Ml algorithms
         """
-        self.data, self.y_train = self._processor._process(self.data, self.ntrain)
+        self.data, self.y_train, self.X_train = self._processor._process(
+            self.data, self.ntrain
+        )
         print()
         print("Data has been Pre-Processed")
         print()
-        return self.data, self.y_train
+        return self.data, self.y_train, self.X_train
 
     class visualizer:
         def __init__(self, House_Price_OOP):
@@ -93,11 +96,12 @@ class SoundObjectOriented:
 
             self.hp = House_Price_OOP
             self.data = self.hp.data
+            self.X_train = self.hp.X_train
             self.y_train = self.hp.y_train
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
             self._ML_ = ML(
-                data=self.data,
+                data=self.X_train,
                 y_train=self.y_train,
                 testID=self.testID,
                 test_size=0.2,
