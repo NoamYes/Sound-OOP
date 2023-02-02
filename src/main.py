@@ -39,8 +39,13 @@ def main():
     test_extracted = prepare_data.extract_features(
         TEST_PATH, "test", loadPreComputed=True, save=True, save_path=DATA_PATH + "/"
     )
-    train_extracted["label"] = train.loc[train_extracted["fname"].to_numpy()]["label"]
-    test_extracted["label"] = test.loc[test_extracted["fname"].to_numpy()]["label"]
+    train_extracted["label"] = train.loc[train_extracted["fname"].to_numpy()][
+        "label"
+    ].to_numpy()
+    test_extracted["label"] = test.loc[test_extracted["fname"].to_numpy()][
+        "label"
+    ].to_numpy()
+
     train_extracted.set_index("fname", inplace=True)
     test_extracted.set_index("fname", inplace=True)
     #%%

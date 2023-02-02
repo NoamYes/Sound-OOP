@@ -62,14 +62,14 @@ class ML:
                     alpha=0.0005, random_state=2021  # Lasso model(Regularized model)
                 ),
             ),
-            "Lasso Lars Ic": LassoLarsIC(
-                criterion="aic",  # LassoLars IC model
-                fit_intercept=True,
-                max_iter=200,
-                normalize=True,
-                precompute="auto",
-                verbose=False,
-            ),
+            # "Lasso Lars Ic": LassoLarsIC(
+            #     criterion="aic",  # LassoLars IC model
+            #     fit_intercept=True,
+            #     max_iter=200,
+            #     normalize=True,
+            #     precompute="auto",
+            #     verbose=False,
+            # ),
             "Random Forest": RandomForestRegressor(
                 n_estimators=300
             ),  # Random Forest model
