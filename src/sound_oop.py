@@ -46,9 +46,7 @@ class SoundObjectOriented:
         concat train data and test data to make a data DataFrame
         :return:
         """
-        data = pd.concat(
-            [self.train.set_index(index_name), self.test.set_index(index_name)]
-        ).reset_index(drop=True)
+        data = pd.concat([self.train, self.test]).reset_index(drop=True)
 
         return data
 
@@ -61,7 +59,6 @@ class SoundObjectOriented:
         print(self._info.show_basic_info(self.data))
 
     def pre_processing(self):
-
         """
         preprocess the data before applying Ml algorithms
         """
@@ -75,7 +72,6 @@ class SoundObjectOriented:
 
     class visualizer:
         def __init__(self, House_Price_OOP):
-
             self.hp = House_Price_OOP
             self.data = self.hp.data
             self.y_train = self.hp.y_train
@@ -84,16 +80,13 @@ class SoundObjectOriented:
             self.data_vis = data_visualization
 
         def box_plot(self, columns):
-
             self.data_vis.box_plot(columns)
 
         def bar_plot(self, columns):
-
             self.data_vis.bar_plot(columns)
 
     class ml:
         def __init__(self, House_Price_OOP):
-
             self.hp = House_Price_OOP
             self.data = self.hp.data
             self.X_train = self.hp.X_train
@@ -109,19 +102,15 @@ class SoundObjectOriented:
             )
 
         def show_available_algorithms(self):
-
             self._ML_.show_available()
 
         def init_regressors(self, num_models="all"):
-
             self._ML_.init_ml_regressors(num_models)
 
         def train_test_validation(self, show_results=True):
-
             self._ML_.train_test_eval_show_results(show=show_results)
 
         def cross_validation(self, num_models=4, n_folds=5, show_results=False):
-
             self._ML_.cv_eval_show_results(
                 num_models=num_models, n_folds=n_folds, show=show_results
             )
@@ -129,22 +118,17 @@ class SoundObjectOriented:
         def visualize_train_test(
             self, metrics=["r_squared", "adjusted r_squared", "mae", "mse", "rmse"]
         ):
-
             self._ML_.visualize_results(cv_train_test="train test", metrics=metrics)
 
         def visualize_cv(self, metrics=["r_squared", "rmse"]):
-
             self._ML_.visualize_results(cv_train_test="cv", metrics_cv=metrics)
 
         def fit_best_model(self):
-
             self._ML_.fit_best_model()
 
         def show_predictions(self):
-
             return self._ML_.show_predictions()
 
         def save_predictions(self, file_name):
-
             self._ML_.save_predictions(file_name)
             print("The prediction is saved")

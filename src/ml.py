@@ -29,7 +29,6 @@ import xgboost as xgb
 
 class ML:
     def __init__(self, data, y_train, testID, test_size, ntrain):
-
         print()
         print("Machine Learning object is created")
         print()
@@ -40,7 +39,7 @@ class ML:
         self.train = self.data[: self.ntrain]
         self.test = self.data[self.ntrain :]
         self.testID = testID
-        self.y_train = y_train
+        self.y_train = y_train[: self.ntrain]
 
         self.reg_models = {}
 
@@ -80,7 +79,7 @@ class ML:
                 StandardScaler(),
                 GradientBoostingClassifier(
                     n_estimators=3000,  # GradientBoosting model
-                    learning_rate=0.005,
+                    learning_rate=0.15,
                     max_depth=4,
                     max_features="sqrt",
                     min_samples_leaf=15,
@@ -92,7 +91,6 @@ class ML:
         }
 
     def init_ml_regressors(self, algorithms):
-
         if algorithms.lower() == "all":
             for model in self.base_models.keys():
                 self.reg_models[model.title()] = self.base_models[model.title()]
@@ -126,7 +124,6 @@ class ML:
         print("\n", 50 * "=", "\n")
 
     def train_test_eval_show_results(self, show=True):
-
         if not self.reg_models:
             raise TypeError("Add models first before fitting")
 
@@ -222,7 +219,6 @@ class ML:
                 )
 
     def cv_eval_show_results(self, num_models=4, n_folds=5, show=False):
-
         # prepare configuration for cross validation test
         # Create two dictionaries to store the results of R-Squared and RMSE
         self.r_2_results = {"R-Squared": {}, "Mean": {}, "std": {}}
@@ -298,9 +294,7 @@ class ML:
         metrics=["r_squared", "adjusted r_squared", "mae", "mse", "rmse"],
         metrics_cv=["r_squared", "rmse"],
     ):
-
         if cv_train_test.lower() == "cv":
-
             # visualize the results of R-Squared CV for each model
             self.r_2_cv_results = pd.DataFrame(
                 index=self.r_2_results["R-Squared"].keys()

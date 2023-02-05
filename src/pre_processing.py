@@ -213,11 +213,17 @@ class PreProcessing:
         #     A new normalized dataset.
         #     """
 
-        max = np.vstack(np.squeeze(self.data[columns].to_numpy())).max()
-        min = np.vstack(np.squeeze(self.data[columns].to_numpy())).min()
+        # max = np.vstack(np.squeeze(self.data[columns].to_numpy())).max()
+        # min = np.vstack(np.squeeze(self.data[columns].to_numpy())).min()
+        # #     # Normalize our numeric data
+        # self.data[columns] = self.data[columns].apply(
+        #     lambda arr: (arr - min) / (max - min + 1e-6) - 0.5
+        # )
+        mean = np.vstack(np.squeeze(self.data[columns].to_numpy())).mean()
+        std = np.vstack(np.squeeze(self.data[columns].to_numpy())).std()
         #     # Normalize our numeric data
         self.data[columns] = self.data[columns].apply(
-            lambda arr: (arr - min) / (max - min + 1e-6) - 0.5
+            lambda arr: (arr - mean) / std
         )  # Normalize the data with Logarithms
 
         # def minmax_normalize(elem, min, max):

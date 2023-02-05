@@ -10,7 +10,7 @@ seaborn
 plotly
 xgboost
 pyarrow
-
+keras
 
 # required for the data feature engineering
 
