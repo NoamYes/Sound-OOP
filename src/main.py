@@ -17,6 +17,7 @@ def main():
     TRAIN_PATH = os.getenv("TRAIN_PATH")
     TEST_PATH = os.getenv("TRAIN_PATH")
     DATA_PATH = os.getenv("DATA_PATH")
+    N_MFCC = int(os.getenv("N_MFCC"))
 
     # %% load data
     train = pd.read_csv("data/train.csv")
@@ -48,10 +49,30 @@ def main():
     train_extracted.set_index("fname", inplace=True)
     test_extracted.set_index("fname", inplace=True)
 
+    def reshape_mfcc(mfcc):
+        return mfcc.reshape(-1, N_MFCC)
+
+    train_extracted["mfcc_features"] = train_extracted["mfcc_features"].apply(
+        reshape_mfcc
+    )
+
+    test_extracted["mfcc_features"] = test_extracted["mfcc_features"].apply(
+        reshape_mfcc
+    )
+
     # %% trim data for debug purposes
 
-    train_extracted = train_extracted[:10]
-    test_extracted = test_extracted[:10]
+    # train_extracted = train_extracted[:4000]
+    # test_extracted = test_extracted[:4000]
+
+    # %% reduce dimensionality of data
+
+    # train_extracted["mfcc_features"] = train_extracted["mfcc_features"].apply(
+    #     lambda x: x[range(0, test_extracted.shape[1], 10)]
+    # )
+    # test_extracted["mfcc_features"] = test_extracted["mfcc_features"].apply(
+    #     lambda x: x[range(0, test_extracted.shape[1], 10)]
+    # )
 
     # %%
 

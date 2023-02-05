@@ -17,6 +17,8 @@ class SoundObjectOriented:
         self.testID = None
         self.y_train = None
         self.X_train = None
+        self.X_test = None
+        self.y_test = None
         self.train = None
         self.test = None
         self._info = Information()
@@ -34,9 +36,9 @@ class SoundObjectOriented:
         self.test = X_test
 
         # concatinating the whole data
-        # self.data = self.concat_data(self.train, self.test, index_name)
-        # self.orig_data = self.data.copy()
-        self.data = X_train
+        self.data = self.concat_data(self.train, self.test, index_name)
+        self.orig_data = self.data.copy()
+        # self.data = X_train
         print()
         print("Your data has been added")
         print()
@@ -62,13 +64,17 @@ class SoundObjectOriented:
         """
         preprocess the data before applying Ml algorithms
         """
-        self.data, self.y_train, self.X_train = self._processor._process(
-            self.data, self.ntrain
-        )
+        (
+            self.data,
+            self.y_train,
+            self.X_train,
+            self.X_test,
+            self.y_test,
+        ) = self._processor._process(self.data, self.ntrain)
         print()
         print("Data has been Pre-Processed")
         print()
-        return self.data, self.y_train, self.X_train
+        return self.data, self.y_train, self.X_train, self.X_test, self.y_test
 
     class visualizer:
         def __init__(self, House_Price_OOP):
@@ -94,8 +100,10 @@ class SoundObjectOriented:
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
             self._ML_ = ML(
-                data=self.X_train,
+                data=self.data,
+                X_train=self.X_train,
                 y_train=self.y_train,
+                X_test=self.hp.X_test,
                 testID=self.testID,
                 test_size=0.2,
                 ntrain=self.ntrain,

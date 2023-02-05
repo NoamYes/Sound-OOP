@@ -8,13 +8,15 @@ import plotly.io as pio
 import plotly.express as px
 from plotly.offline import iplot, init_notebook_mode
 
+pd.options.plotting.backend = "plotly"
+
 # machine learning libraries:
 from sklearn.svm import SVR
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import (
     cross_validate,
     train_test_split,
-    KFold,
+    StratifiedKFold,
     cross_val_score,
 )
 from sklearn.preprocessing import StandardScaler, LabelEncoder, RobustScaler
@@ -28,7 +30,7 @@ import xgboost as xgb
 
 
 class ML:
-    def __init__(self, data, y_train, testID, test_size, ntrain):
+    def __init__(self, data, X_train, y_train, X_test, testID, test_size, ntrain):
         print()
         print("Machine Learning object is created")
         print()
@@ -36,8 +38,8 @@ class ML:
         self.data = data
         self.ntrain = ntrain
         self.test_size = test_size
-        self.train = self.data[: self.ntrain]
-        self.test = self.data[self.ntrain :]
+        self.X_train = X_train
+        self.test = X_test
         self.testID = testID
         self.y_train = y_train[: self.ntrain]
 
@@ -74,20 +76,20 @@ class ML:
             #     n_estimators=300
             # ),  # Random Forest model
             # # "Svm": SVR(),  # Support Vector Machines
-            # "Xgboost": XGBClassifier(),  # XGBoost model
-            "Gradient Boosting": make_pipeline(
-                StandardScaler(),
-                GradientBoostingClassifier(
-                    n_estimators=3000,  # GradientBoosting model
-                    learning_rate=0.15,
-                    max_depth=4,
-                    max_features="sqrt",
-                    min_samples_leaf=15,
-                    min_samples_split=10,
-                    # loss="log_loss",
-                    random_state=2021,
-                ),
-            ),
+            "Xgboost": XGBClassifier(),  # XGBoost model
+            # "Gradient Boosting": make_pipeline(
+            #     StandardScaler(),
+            #     GradientBoostingClassifier(
+            #         n_estimators=3000,  # GradientBoosting model
+            #         learning_rate=0.15,
+            #         max_depth=4,
+            #         max_features="sqrt",
+            #         min_samples_leaf=15,
+            #         min_samples_split=10,
+            #         # loss="log_loss",
+            #         random_state=2021,
+            #     ),
+            # ),
         }
 
     def init_ml_regressors(self, algorithms):
@@ -128,7 +130,7 @@ class ML:
             raise TypeError("Add models first before fitting")
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.train,
+            self.X_train,
             self.y_train,
             test_size=self.test_size,
             random_state=2021,
@@ -144,7 +146,7 @@ class ML:
         }
 
         self.p = self.X_train.shape[1]
-        self.train_n = self.X_train.shape[0]
+        self.X_train_n = self.X_train.shape[0]
         self.test_n = self.X_test.shape[0]
 
         for name in self.reg_models:
@@ -166,8 +168,11 @@ class ML:
 
             # calculate the Adjusted R-Squared for training and testing
             adj_train, adj_test = (
-                1 - (1 - r2_train) * (self.train_n - 1) / (self.train_n - self.p - 1)
-            ), (1 - (1 - r2_test) * (self.train_n - 1) / (self.train_n - self.p - 1))
+                1
+                - (1 - r2_train) * (self.X_train_n - 1) / (self.X_train_n - self.p - 1)
+            ), (
+                1 - (1 - r2_test) * (self.X_train_n - 1) / (self.X_train_n - self.p - 1)
+            )
             (
                 self.result_data["Adjusted R^2"]["Training"][name],
                 self.result_data["Adjusted R^2"]["Testing"][name],
@@ -254,19 +259,19 @@ class ML:
         )
 
         # create Kfold for the cross-validation
-        kfold = KFold(n_splits=n_folds, shuffle=True, random_state=2021).get_n_splits(
-            self.train
-        )
+        kfold = StratifiedKFold(
+            n_splits=n_folds, shuffle=True, random_state=2021
+        ).get_n_splits(self.X_train)
 
         for name, _ in models_name.items():
             model = self.base_models[name]
             r_2 = cross_val_score(
-                model, self.train, self.y_train, scoring="r2", cv=kfold  # R-Squared
+                model, self.X_train, self.y_train, scoring="r2", cv=kfold  # R-Squared
             )
             rms = np.sqrt(
                 -cross_val_score(
                     model,
-                    self.train,
+                    self.X_train,
                     self.y_train,  # RMSE
                     cv=kfold,
                     scoring="neg_mean_squared_error",
@@ -344,12 +349,12 @@ class ML:
                     self.rmse_cv_results = self.rmse_cv_results.sort_values(
                         by="Mean", ascending=True
                     )
-                    self.rmse_cv_results.iplot(
+                    self.rmse_cv_results.plot(
                         kind="bar",
                         title="Maximum, Minimun, Mean values and standard deviation <br>For RMSE values for each model",
                     )
                     self.scores = pd.DataFrame(self.rmse_results["RMSE"])
-                    self.scores.iplot(
+                    self.scores.plot(
                         kind="box",
                         title="Box plot for the variation of RMSE values for each model",
                     )
@@ -358,12 +363,12 @@ class ML:
                     self.r_2_cv_results = self.r_2_cv_results.sort_values(
                         by="Mean", ascending=False
                     )
-                    self.r_2_cv_results.iplot(
+                    self.r_2_cv_results.plot(
                         kind="bar",
                         title="Max, Min, Mean, and standard deviation <br>For R-Squared values for each model",
                     )
                     self.scores = pd.DataFrame(self.r_2_results["R-Squared"])
-                    self.scores.iplot(
+                    self.scores.plot(
                         kind="box",
                         title="Box plot for the variation of R-Squared for each model",
                     )
@@ -462,7 +467,7 @@ class ML:
         print(30 * "=")
         print()
         self.best_model = self.base_models[self.best_model_name]
-        self.best_model.fit(self.train, self.y_train)
+        self.best_model.fit(self.X_train, self.y_train)
         print(self.best_model_name, " is fitted to the data!")
         print()
         print(30 * "=")
