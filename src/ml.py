@@ -76,7 +76,7 @@ class ML:
             #     n_estimators=300
             # ),  # Random Forest model
             # # "Svm": SVR(),  # Support Vector Machines
-            "Xgboost": XGBClassifier(verbosity=2),  # XGBoost model
+            "Xgboost": XGBClassifier(verbosity=3),  # XGBoost model
             # "Gradient Boosting": make_pipeline(
             #     StandardScaler(),
             #     GradientBoostingClassifier(

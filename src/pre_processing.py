@@ -261,3 +261,23 @@ class PreProcessing:
         self.data[col] = self.data[col].apply(lambda arr: arr.flatten())
 
         return self.data
+
+    def under_sample_features(self, col, under_rate=10):
+        """
+        This function is used to under sample the data.
+        ...
+        Attributes
+        ----------
+        data : Pandas DataFrame
+            The data you want to under sample.
+
+        Returns
+        ----------
+        A new under sampled dataset.
+        """
+
+        self.data[col] = self.data[col].apply(
+            lambda arr: arr[range(1, len(arr), under_rate)]
+        )
+
+        return self.data

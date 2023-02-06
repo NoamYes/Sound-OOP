@@ -55,6 +55,9 @@ class Processor:
         # flatten num col values
         self.data = self._preprocessor.flatten_data(num_cols[0])
 
+        # undersample features
+        self.data = self._preprocessor.under_sample_features(num_cols[0], 10)
+
         # extract X_train and X_test
 
         self.X_train = np.vstack(
