@@ -50,7 +50,10 @@ class Processor:
         self.data = self._preprocessor.get_dummies(cat_cols)
 
         # normalizing
-        self.data = self._preprocessor.norm_data(num_cols)
+        self.data = self._preprocessor.norm_data(num_cols[0])
+
+        # flatten num col values
+        self.data = self._preprocessor.flatten_data(num_cols[0])
 
         # extract X_train and X_test
 

@@ -199,7 +199,7 @@ class PreProcessing:
 
         return self.data
 
-    def norm_data(self, columns):
+    def norm_data(self, col):
         #     """
         #     This function is used to normalize the data.
         #     ...
@@ -219,11 +219,18 @@ class PreProcessing:
         # self.data[columns] = self.data[columns].apply(
         #     lambda arr: (arr - min) / (max - min + 1e-6) - 0.5
         # )
-        mean = np.vstack(np.squeeze(self.data[columns].to_numpy())).mean()
-        std = np.vstack(np.squeeze(self.data[columns].to_numpy())).std()
+        # mean = np.vstack(np.squeeze(self.data[columns].to_numpy())).mean()
+        # std = np.vstack(np.squeeze(self.data[columns].to_numpy())).std()
+
+        mean = np.stack(self.data["mfcc_features"].to_list()).mean(axis=0)
+        std = np.stack(self.data["mfcc_features"].to_list()).std(axis=0)
+
+        def normalize_arr(arr):
+            return np.divide((arr - mean), (std + 1e-6))
+
         #     # Normalize our numeric data
-        self.data[columns] = self.data[columns].apply(
-            lambda arr: (arr - mean) / std
+        self.data[col] = self.data[col].apply(
+            normalize_arr
         )  # Normalize the data with Logarithms
 
         # def minmax_normalize(elem, min, max):
@@ -235,4 +242,22 @@ class PreProcessing:
         #     return elem - 0.5
 
         # normalized_data = self.data.apply(minmax_normalize, axis=1)
+        return self.data
+
+    def flatten_data(self, col):
+        """
+        This function is used to flatten the data.
+        ...
+        Attributes
+        ----------
+        data : Pandas DataFrame
+            The data you want to flatten.
+
+        Returns
+        ----------
+        A new flattened dataset.
+        """
+
+        self.data[col] = self.data[col].apply(lambda arr: arr.flatten())
+
         return self.data
