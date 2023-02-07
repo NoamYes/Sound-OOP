@@ -11,6 +11,7 @@ plotly
 xgboost
 pyarrow
 keras
+tensorflow
 
 # required for the data feature engineering
 

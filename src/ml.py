@@ -28,9 +28,16 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import xgboost as xgb
 
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Input
+from keras.optimizers import Adam
+from keras.utils import to_categorical
+
 
 class ML:
-    def __init__(self, data, X_train, y_train, X_test, testID, test_size, ntrain):
+    def __init__(
+        self, data, X_train, y_train, X_test, testID, test_size, ntrain, nClasses=4
+    ):
         print()
         print("Machine Learning object is created")
         print()
@@ -44,6 +51,24 @@ class ML:
         self.y_train = y_train[: self.ntrain]
 
         self.reg_models = {}
+
+        def build_model_graph(input_shape):
+            Input(input_shape)
+            model = Sequential()
+            model.add(Dense(256))
+            model.add(Activation("relu"))
+            model.add(Dropout(0.5))
+            model.add(Dense(256))
+            model.add(Activation("relu"))
+            model.add(Dropout(0.5))
+            model.add(Dense(nClasses))
+            model.add(Activation("softmax"))
+            # Compile the model
+            model.compile(
+                loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam"
+            )
+
+            return model
 
         # define models to test:
         self.base_models = {
@@ -76,7 +101,7 @@ class ML:
             #     n_estimators=300
             # ),  # Random Forest model
             # # "Svm": SVR(),  # Support Vector Machines
-            "Xgboost": XGBClassifier(verbosity=3),  # XGBoost model
+            # "Xgboost": XGBClassifier(verbosity=3),  # XGBoost model
             # "Gradient Boosting": make_pipeline(
             #     StandardScaler(),
             #     GradientBoostingClassifier(
@@ -90,6 +115,7 @@ class ML:
             #         random_state=2021,
             #     ),
             # ),
+            "Neural Network": build_model_graph(input_shape=X_train.shape[1:]),
         }
 
     def init_ml_regressors(self, algorithms):

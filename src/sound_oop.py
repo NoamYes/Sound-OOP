@@ -3,6 +3,7 @@ from ml import ML
 from processor import Processor
 
 import pandas as pd
+import numpy as np
 
 
 class SoundObjectOriented:
@@ -107,6 +108,7 @@ class SoundObjectOriented:
                 testID=self.testID,
                 test_size=0.2,
                 ntrain=self.ntrain,
+                nClasses=len(np.unique(self.y_train)),
             )
 
         def show_available_algorithms(self):

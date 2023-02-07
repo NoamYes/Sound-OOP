@@ -62,8 +62,8 @@ def main():
 
     # %% trim data for debug purposes
 
-    # train_extracted = train_extracted[:4000]
-    # test_extracted = test_extracted[:4000]
+    # train_extracted = train_extracted[:40]
+    # test_extracted = test_extracted[:40]
 
     # %% reduce dimensionality of data
 
