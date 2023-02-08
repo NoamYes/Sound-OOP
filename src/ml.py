@@ -63,12 +63,13 @@ class ML:
         self.test = X_test
         self.testID = testID
         self.y_train = y_train[: self.ntrain]
+        self.input_shape = (self.X_train.shape[1],)
 
         self.reg_models = {}
         self.base_models = {}
 
-        def build_dummy_model(input_shape):
-            Input(input_shape)
+        def build_dummy_model():
+            Input(self.input_shape)
             model = Sequential()
             model.add(Dense(nClasses))
             # Compile the model
@@ -78,8 +79,8 @@ class ML:
 
             return model
 
-        def build_model_graph(input_shape):
-            Input(input_shape)
+        def build_model_graph():
+            Input(self.input_shape)
             model = Sequential()
             model.add(Dense(256))
             model.add(Activation("relu"))
@@ -150,12 +151,17 @@ class ML:
         # keras models
         self.keras_models = {
             "Dummy Classifier Keras": KerasClassifier(
-                build_dummy_model(input_shape=X_train.shape[1:]),
+                build_dummy_model,
                 epochs=10,
                 batch_size=32,
                 verbose=0,
             ),
-            "Neural Network": build_model_graph(input_shape=X_train.shape[1:]),
+            "Neural Network": KerasClassifier(
+                build_model_graph,
+                epochs=10,
+                batch_size=32,
+                verbose=0,
+            ),
         }
 
     def model_type(self, model):
@@ -232,18 +238,9 @@ class ML:
                 history = reg_model.fit(
                     self.X_train, to_categorical(self.y_train), epochs=3
                 )
-
             # make predictions with train and test datasets
-            if self.model_type(name) == "sklearn":
-                y_pred_train = reg_model.predict(self.X_train)
-                y_pred_test = reg_model.predict(self.X_test)
-            elif self.model_type(name) == "keras":
-                y_pred_train = reg_model.predict(self.X_train)
-                y_pred_test = reg_model.predict(self.X_test)
-
-            if self.model_type(name) == "keras":
-                y_pred_train = np.argmax(y_pred_train, axis=1)
-                y_pred_test = np.argmax(y_pred_test, axis=1)
+            y_pred_train = reg_model.predict(self.X_train)
+            y_pred_test = reg_model.predict(self.X_test)
 
             # calculate the F1 score for training and testing
             f1_score_train = f1_score(self.y_train, y_pred_train, average="weighted")
@@ -311,30 +308,21 @@ class ML:
         ).get_n_splits(self.X_train)
 
         scoring = {
-            "accuracy": make_scorer(accuracy_score),
-            "precision": make_scorer(precision_score),
-            "recall": make_scorer(recall_score),
-            "f1_score": make_scorer(f1_score),
+            "accuracy": make_scorer(accuracy_score, average="weighted"),
+            "precision": make_scorer(precision_score, average="weighted"),
+            "recall": make_scorer(recall_score, average="weighted"),
+            "f1_score": make_scorer(f1_score, average="weighted"),
         }
 
         for name, _ in models_name.items():
             model = self.base_models[name]
-            if self.model_type(name) == "sklearn":
-                results = cross_validate(
-                    model,
-                    self.X_train,
-                    self.y_train,
-                    scoring=scoring,
-                    cv=kfold,
-                )
-            elif self.model_type(name) == "keras":
-                results = cross_validate(
-                    model,
-                    self.X_train,
-                    to_categorical(self.y_train),
-                    scoring=scoring,
-                    cv=kfold,
-                )
+            results = cross_validate(
+                model,
+                self.X_train,
+                self.y_train,
+                scoring=scoring,
+                cv=kfold,
+            )
 
             # save the f1 score reults
             self.f1_results["F1_score"][name] = results["f1_score"].mean()
