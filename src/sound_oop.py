@@ -114,8 +114,8 @@ class SoundObjectOriented:
         def show_available_algorithms(self):
             self._ML_.show_available()
 
-        def init_regressors(self, num_models="all"):
-            self._ML_.init_ml_regressors(num_models)
+        def init_classifiers(self, num_models="all"):
+            self._ML_.init_ml_classifiers(num_models)
 
         def train_test_validation(self, show_results=True):
             self._ML_.train_test_eval_show_results(show=show_results)
@@ -125,9 +125,7 @@ class SoundObjectOriented:
                 num_models=num_models, n_folds=n_folds, show=show_results
             )
 
-        def visualize_train_test(
-            self, metrics=["r_squared", "adjusted r_squared", "mae", "mse", "rmse"]
-        ):
+        def visualize_train_test(self, metrics=["f1"]):
             self._ML_.visualize_results(cv_train_test="train test", metrics=metrics)
 
         def visualize_cv(self, metrics=["r_squared", "rmse"]):

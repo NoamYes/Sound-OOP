@@ -84,7 +84,7 @@ def main():
 
     ML = sound_oop.ml(sound_oop)
     ML.show_available_algorithms()
-    ML.init_regressors("all")
+    ML.init_classifiers("all")
     ML.train_test_validation()
     ML.visualize_train_test()
     ML.cross_validation("all")
