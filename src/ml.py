@@ -150,18 +150,18 @@ class ML:
 
         # keras models
         self.keras_models = {
-            "Dummy Classifier Keras": KerasClassifier(
-                build_dummy_model,
-                epochs=10,
-                batch_size=32,
-                verbose=0,
-            ),
-            "Neural Network": KerasClassifier(
-                build_model_graph,
-                epochs=10,
-                batch_size=32,
-                verbose=0,
-            ),
+            # "Dummy Classifier Keras": KerasClassifier(
+            #     build_dummy_model,
+            #     epochs=10,
+            #     batch_size=32,
+            #     verbose=0,
+            # ),
+            # "Neural Network": KerasClassifier(
+            #     build_model_graph,
+            #     epochs=100,
+            #     batch_size=32,
+            #     verbose=0,
+            # ),
         }
 
     def model_type(self, model):
@@ -308,7 +308,7 @@ class ML:
         ).get_n_splits(self.X_train)
 
         scoring = {
-            "accuracy": make_scorer(accuracy_score, average="weighted"),
+            "accuracy": make_scorer(accuracy_score),
             "precision": make_scorer(precision_score, average="weighted"),
             "recall": make_scorer(recall_score, average="weighted"),
             "f1_score": make_scorer(f1_score, average="weighted"),
@@ -325,12 +325,9 @@ class ML:
             )
 
             # save the f1 score reults
-            self.f1_results["F1_score"][name] = results["f1_score"].mean()
-
-            # save the RMSE reults
-            # self.rmse_results["RMSE"][name] = rms
-            # self.rmse_results["Mean"][name] = rms.mean()
-            # self.rmse_results["std"][name] = rms.std()
+            self.f1_results["F1_score"][name] = results["test_f1_score"]
+            self.f1_results["Mean"][name] = results["test_f1_score"].mean()
+            self.f1_results["std"][name] = results["test_f1_score"].std()
 
             print(name, (30 - len(name)) * "=", ">", "is Done!")
 
@@ -356,40 +353,16 @@ class ML:
             self.f1_cv_results["Mean"] = [
                 self.f1_results["Mean"][m] for m in self.f1_results["Mean"].keys()
             ]
-            # append the mean of all R-Squared for each model to the dataframe
-            self.f1_cv_results["Mean"] = [
-                self.f1_results["Mean"][m] for m in self.f1_results["Mean"].keys()
-            ]
-            # append the min R-Squared for each model to the dataframe
+
+            # append the min F1_score for each model to the dataframe
             self.f1_cv_results["Min"] = [
-                self.f1_results["F1-Score"][m].min()
-                for m in self.f1_results["F1-Score"].keys()
+                self.f1_results["F1_score"][m].min()
+                for m in self.f1_results["F1_score"].keys()
             ]
-            # append the std of all R-Squared for each model to the dataframe
+            # append the std of all F1_score for each model to the dataframe
             self.f1_cv_results["std"] = [
                 self.f1_results["std"][m] for m in self.f1_results["std"].keys()
             ]
-
-            # # visualize the results of RMSE CV for each model
-            # self.rmse_cv_results = pd.DataFrame(index=self.rmse_results["RMSE"].keys())
-            # # append the max R-Squared for each model to the dataframe
-            # self.rmse_cv_results["Max"] = [
-            #     self.rmse_results["RMSE"][m].max()
-            #     for m in self.rmse_results["RMSE"].keys()
-            # ]
-            # # append the mean of all R-Squared for each model to the dataframe
-            # self.rmse_cv_results["Mean"] = [
-            #     self.rmse_results["Mean"][m] for m in self.rmse_results["Mean"].keys()
-            # ]
-            # # append the min R-Squared for each model to the dataframe
-            # self.rmse_cv_results["Min"] = [
-            #     self.rmse_results["RMSE"][m].min()
-            #     for m in self.rmse_results["RMSE"].keys()
-            # ]
-            # # append the std of all R-Squared for each model to the dataframe
-            # self.rmse_cv_results["std"] = [
-            #     self.rmse_results["std"][m] for m in self.rmse_results["std"].keys()
-            # ]
 
             for parm in metrics_cv:
                 if parm.lower() in ["f1"]:
@@ -400,25 +373,25 @@ class ML:
                         kind="bar",
                         title="Maximum, Minimun, Mean values and standard deviation <br>For f1 values for each model",
                     )
-                    self.scores = pd.DataFrame(self.f1_results["f1"])
+                    self.scores = pd.DataFrame(self.f1_results["F1_score"])
                     self.scores.plot(
                         kind="box",
                         title="Box plot for the variation of f1 values for each model",
                     )
 
-                # elif parm.lower() in ["r_squared", "rsquared", "r squared"]:
-                #     self.r_2_cv_results = self.r_2_cv_results.sort_values(
-                #         by="Mean", ascending=False
-                #     )
-                #     self.r_2_cv_results.plot(
-                #         kind="bar",
-                #         title="Max, Min, Mean, and standard deviation <br>For R-Squared values for each model",
-                #     )
-                #     self.scores = pd.DataFrame(self.f1_results["F1-Score"])
-                #     self.scores.plot(
-                #         kind="box",
-                #         title="Box plot for the variation of R-Squared for each model",
-                #     )
+                elif parm.lower() in ["f1_"]:
+                    self.f1_cv_results = self.f1_cv_results.sort_values(
+                        by="Mean", ascending=False
+                    )
+                    self.f1_cv_results.plot(
+                        kind="bar",
+                        title="Max, Min, Mean, and standard deviation <br>For R-Squared values for each model",
+                    )
+                    self.scores = pd.DataFrame(self.f1_results["F1_Score"])
+                    self.scores.plot(
+                        kind="box",
+                        title="Box plot for the variation of R-Squared for each model",
+                    )
                 else:
                     print("Not avilable")
 

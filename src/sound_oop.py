@@ -128,7 +128,7 @@ class SoundObjectOriented:
         def visualize_train_test(self, metrics=["f1"]):
             self._ML_.visualize_results(cv_train_test="train test", metrics=metrics)
 
-        def visualize_cv(self, metrics=["r_squared", "rmse"]):
+        def visualize_cv(self, metrics=["f1"]):
             self._ML_.visualize_results(cv_train_test="cv", metrics_cv=metrics)
 
         def fit_best_model(self):
