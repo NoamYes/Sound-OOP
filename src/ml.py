@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 # visualization libraries
@@ -7,8 +6,6 @@ import plotly.graph_objs as go
 import plotly.io as pio
 import plotly.express as px
 from plotly.offline import iplot, init_notebook_mode
-
-pd.options.plotting.backend = "plotly"
 
 # machine learning libraries:
 from sklearn.svm import SVR
@@ -46,6 +43,8 @@ from keras.utils import to_categorical
 from keras.wrappers.scikit_learn import KerasClassifier
 
 # from scikeras.wrappers import KerasClassifier
+
+pd.options.plotting.backend = "plotly"
 
 
 class ML:
@@ -99,7 +98,7 @@ class ML:
 
         # define models to test:
         self.sklearn_models = {
-            "Dummy Classifier Sklearn": DummyClassifier(),  # Dummy Classifier
+            # "Dummy Classifier Sklearn": DummyClassifier(),  # Dummy Classifier
             # "Elastic Net": make_pipeline(
             #     RobustScaler(),  # Elastic Net model(Regularized model)
             #     ElasticNet(alpha=0.0005, l1_ratio=0.9),
@@ -130,7 +129,7 @@ class ML:
             # ),  # Random Forest model
             # # "Svm": SVR(),  # Support Vector Machines
             # "Xgboost": XGBClassifier(
-            # objective="multi:softprob", verbosity=3
+            #     objective="multi:softprob", verbosity=3
             # ),  # XGBoost model
             # "Gradient Boosting": make_pipeline(
             #     StandardScaler(),
@@ -156,12 +155,12 @@ class ML:
             #     batch_size=32,
             #     verbose=0,
             # ),
-            # "Neural Network": KerasClassifier(
-            #     build_model_graph,
-            #     epochs=100,
-            #     batch_size=32,
-            #     verbose=0,
-            # ),
+            "Neural Network": KerasClassifier(
+                build_model_graph,
+                epochs=100,
+                # batch_size=32,
+                # verbose=3,
+            ),
         }
 
     def model_type(self, model):
@@ -236,7 +235,11 @@ class ML:
                 reg_model = reg_model.fit(self.X_train, self.y_train)
             elif self.model_type(name) == "keras":
                 history = reg_model.fit(
-                    self.X_train, to_categorical(self.y_train), epochs=3
+                    self.X_train,
+                    to_categorical(self.y_train),
+                    # epochs=25,
+                    # batch_size=32,
+                    # verbose=3,
                 )
             # make predictions with train and test datasets
             y_pred_train = reg_model.predict(self.X_train)
@@ -369,29 +372,33 @@ class ML:
                     self.f1_cv_results = self.f1_cv_results.sort_values(
                         by="Mean", ascending=True
                     )
-                    self.f1_cv_results.plot(
+                    fig = self.f1_cv_results.plot(
                         kind="bar",
                         title="Maximum, Minimun, Mean values and standard deviation <br>For f1 values for each model",
                     )
+                    fig.show()
                     self.scores = pd.DataFrame(self.f1_results["F1_score"])
-                    self.scores.plot(
+                    fig = self.scores.plot(
                         kind="box",
                         title="Box plot for the variation of f1 values for each model",
                     )
+                    fig.show()
 
                 elif parm.lower() in ["f1_"]:
                     self.f1_cv_results = self.f1_cv_results.sort_values(
                         by="Mean", ascending=False
                     )
-                    self.f1_cv_results.plot(
+                    fig = self.f1_cv_results.plot(
                         kind="bar",
                         title="Max, Min, Mean, and standard deviation <br>For R-Squared values for each model",
                     )
+                    fig.show()
                     self.scores = pd.DataFrame(self.f1_results["F1_Score"])
-                    self.scores.plot(
+                    fig = self.scores.plot(
                         kind="box",
                         title="Box plot for the variation of R-Squared for each model",
                     )
+                    fig.show()
                 else:
                     print("Not avilable")
 
