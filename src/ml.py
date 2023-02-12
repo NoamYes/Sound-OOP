@@ -124,12 +124,22 @@ class ML:
             #     precompute="auto",
             #     verbose=False,
             # ),
-            # "Random Forest": RandomForestClassifier(
-            #     n_estimators=300
-            # ),  # Random Forest model
+            "Random Forest": RandomForestClassifier(
+                n_estimators=300
+            ),  # Random Forest model
             # # "Svm": SVR(),  # Support Vector Machines
             # "Xgboost": XGBClassifier(
-            #     objective="multi:softprob", verbosity=3
+            #     max_depth=5,
+            #     n_estimators=300,
+            #     nthread=-1,
+            #     learning_rate=0.1,
+            #     random_state=2023,
+            #     reg_alpha=0.3,
+            #     reg_lambda=0.1,
+            #     colsample_bytree=0.3,
+            #     colsample_bylevel=0.8,
+            #     objective="multi:softprob",
+            #     verbosity=2,
             # ),  # XGBoost model
             # "Gradient Boosting": make_pipeline(
             #     StandardScaler(),

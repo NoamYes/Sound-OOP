@@ -55,6 +55,10 @@ class Processor:
         # undersample features
         self.data = self._preprocessor.under_sample_features(num_cols[0], 4)
 
+        # calculate mean of each frame row wise
+
+        self.data = self._preprocessor.average_frame_features(num_cols[0])
+
         # flatten num col values
         self.data = self._preprocessor.flatten_data(num_cols[0])
 

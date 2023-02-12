@@ -281,3 +281,21 @@ class PreProcessing:
         )
 
         return self.data
+
+    def average_frame_features(self, col):
+        """
+        This function is used to average the data.
+        ...
+        Attributes
+        ----------
+        data : Pandas DataFrame
+            The data you want to average.
+
+        Returns
+        ----------
+        A new averaged dataset.
+        """
+
+        self.data[col] = self.data[col].apply(lambda arr: np.mean(arr, axis=0))
+
+        return self.data
