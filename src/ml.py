@@ -233,12 +233,12 @@ class ML:
         self.keras = {
             "X_train": self.X_train_1D,
             "models": {
-                # "Dummy Classifier Keras": KerasClassifier(
-                #     build_dummy_model,
-                #     epochs=1,
-                #     batch_size=32,
-                #     verbose=0,
-                # ),
+                "Dummy Classifier Keras": KerasClassifier(
+                    build_dummy_model,
+                    epochs=1,
+                    batch_size=32,
+                    verbose=0,
+                ),
             }
             # "Neural Network1": KerasClassifier(
             #     build_model_graph,
@@ -251,12 +251,12 @@ class ML:
         self.cnn = {
             "X_train": self.X_train_CNN,
             "models": {
-                # "Cnn": KerasClassifier(
-                #     build_2d_conv_model,
-                #     epochs=100,
-                #     # batch_size=32,
-                #     # verbose=3,
-                # ),
+                "Cnn": KerasClassifier(
+                    build_2d_conv_model,
+                    epochs=100,
+                    # batch_size=32,
+                    # verbose=3,
+                ),
             },
         }
 
@@ -271,21 +271,19 @@ class ML:
             return "unknown"
 
     def init_ml_classifiers(self, algorithms):
-        if algorithms.lower() == "all":
-            for model in self.sklearn["models"].keys():
-                self.reg_models[model.title()] = self.sklearn["models"][model.title()]
-                print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
-            for model in self.keras["models"].keys():
-                self.reg_models[model.title()] = self.keras["models"][model.title()]
-                print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
-            for model in self.cnn["models"].keys():
-                self.reg_models[model.title()] = self.cnn["models"][model.title()]
-                print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
+        for model in self.sklearn["models"].keys():
+            self.reg_models[model.title()] = self.sklearn["models"][model.title()]
+        for model in self.keras["models"].keys():
+            self.reg_models[model.title()] = self.keras["models"][model.title()]
+        for model in self.cnn["models"].keys():
+            self.reg_models[model.title()] = self.cnn["models"][model.title()]
+        if str(algorithms).lower() == "all":
             self.base_models = self.reg_models
         else:
             for model in algorithms:
-                if model.lower() in [x.lower() for x in self.base_models.keys()]:
-                    print(self.base_models[model])
+                if model.lower() in [x.lower() for x in self.reg_models.keys()]:
+                    self.base_models[model.title()] = model
+                    # print(self.base_models[model])
                     print(
                         model.title(), (20 - len(str(model))) * "=", ">", "Initialized"
                     )
@@ -605,5 +603,3 @@ class ML:
 
     def save_predictions(self, file_name):
         self.temp.to_csv("{}.csv".format(file_name))
-
-
