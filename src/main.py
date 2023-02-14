@@ -91,10 +91,12 @@ def main():
 
     ML = sound_oop.ml(sound_oop)
     ML.show_available_algorithms()
-    ML.init_classifiers(["Dummy Classifier Keras", "Cnn"])
+    # ML.init_classifiers(["Dummy Classifier Keras", "Cnn"])
+    ML.init_classifiers(["Dummy Classifier Sklearn"])
+
     ML.train_test_validation()
     ML.visualize_train_test()
-    ML.cross_validation(["Dummy Classifier Keras", "Cnn"])
+    ML.cross_validation("all")
     ML.visualize_cv()
     # save the models
     ML.save_models("./assets/models/")

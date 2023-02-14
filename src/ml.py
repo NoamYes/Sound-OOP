@@ -282,7 +282,7 @@ class ML:
         else:
             for model in algorithms:
                 if model.lower() in [x.lower() for x in self.reg_models.keys()]:
-                    self.base_models[model.title()] = model
+                    self.base_models[model] = self.reg_models[model]
                     # print(self.base_models[model])
                     print(
                         model.title(), (20 - len(str(model))) * "=", ">", "Initialized"
@@ -317,7 +317,7 @@ class ML:
             "F1_score": {"Training": {}, "Testing": {}},
         }
 
-        for name, reg_model in self.reg_models.items():
+        for name, reg_model in self.base_models.items():
 
             # if the model is from cnn then take cnn train
             if self.model_type(name) == "cnn":
@@ -557,7 +557,7 @@ class ML:
         )
 
     def evaluate_model_test(self):
-        # choose X_train and X_test based on the model type
+        # choose X_train and X_test based on the model type and save it to file
         if self.model_type(self.best_model_name) == "cnn":
             X_train = self.cnn["X_train"]
             X_test = self.X_test_CNN
