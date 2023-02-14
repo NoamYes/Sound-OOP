@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime
+import pickle
+import os
 
 # visualization libraries
 import plotly
@@ -33,6 +36,8 @@ from sklearn.metrics import (
     precision_score,
     r2_score,
     recall_score,
+    confusion_matrix,
+    classification_report,
 )
 import xgboost as xgb
 
@@ -66,6 +71,7 @@ class ML:
         y_train,
         X_test,
         X_test_CNN,
+        y_test,
         testID,
         test_size,
         ntrain,
@@ -83,6 +89,7 @@ class ML:
         self.X_train_CNN = X_train_CNN
         self.X_test_CNN = X_test_CNN
         self.X_test = X_test
+        self.y_test = y_test
         self.testID = testID
         self.y_train = y_train[: self.ntrain]
 
@@ -244,12 +251,12 @@ class ML:
         self.cnn = {
             "X_train": self.X_train_CNN,
             "models": {
-                "Cnn": KerasClassifier(
-                    build_2d_conv_model,
-                    epochs=100,
-                    # batch_size=32,
-                    # verbose=3,
-                ),
+                # "Cnn": KerasClassifier(
+                #     build_2d_conv_model,
+                #     epochs=100,
+                #     # batch_size=32,
+                #     # verbose=3,
+                # ),
             },
         }
 
@@ -551,8 +558,52 @@ class ML:
             }
         )
 
+    def evaluate_model_test(self):
+        # choose X_train and X_test based on the model type
+        if self.model_type(self.best_model_name) == "cnn":
+            X_train = self.cnn["X_train"]
+            X_test = self.X_test_CNN
+        else:
+            X_train = self.X_train_1D
+            X_test = self.X_test
+        self.y_pred = self.best_model.predict(X_test)
+        self.f1 = f1_score(self.y_test, self.y_pred, average="weighted")
+        self.confusion_matrix = confusion_matrix(self.y_test, self.y_pred)
+        self.classification_report = classification_report(
+            self.y_test, self.y_pred, output_dict=True
+        )
+        self.accuracy = accuracy_score(self.y_test, self.y_pred)
+        print("F1 Score: ", self.f1)
+        print("Accuracy: ", self.accuracy)
+        print("Confusion Matrix: \n", self.confusion_matrix)
+        print("Classification Report: \n", self.classification_report)
+        print(30 * "=")
+        print()
+
+    def ignore(self):
+        pass
+
+    def save_models(self, directory):
+        # save all of the fitted models to certain directory
+        for name, model in self.base_models.items():
+            # save model with its name, its type and the date (with minutes) delimited with underscore
+            file_name = "{}_{}_{}.sav".format(
+                name, self.model_type(name), datetime.now().strftime("%Y-%m-%d_%H-%M")
+            )
+            pickle.dump(model, open(directory + file_name, "wb"))
+
+    def load_models(self, directory):
+        # load all of the fitted models from certain directory
+        self.base_models = {}
+        for file in os.listdir(directory):
+            if file.endswith(".sav"):
+                model = pickle.load(open(directory + file, "rb"))
+                self.base_models[file.split("_")[0]] = model
+
     def show_predictions(self):
         return self.temp
 
     def save_predictions(self, file_name):
         self.temp.to_csv("{}.csv".format(file_name))
+
+

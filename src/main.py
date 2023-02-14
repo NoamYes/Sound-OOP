@@ -86,6 +86,9 @@ def main():
     sound_oop.pre_processing()
     # sound_oop.information()
 
+    # load ml instace already created
+    # ML = SoundObjectOriented.load_ml_instance("./assets/models/ML.pkl")
+
     ML = sound_oop.ml(sound_oop)
     ML.show_available_algorithms()
     ML.init_classifiers("all")
@@ -93,9 +96,14 @@ def main():
     ML.visualize_train_test()
     ML.cross_validation("all")
     ML.visualize_cv()
+    # save the models
+    ML.save_models("./assets/models/")
     ML.fit_best_model()
+    ML.evaluate_best_model()
     ML.show_predictions()
     ML.save_predictions("predictions_best_model")
+
+    SoundObjectOriented.persist_ml_instance(ML, "./assets/models/ML.pkl")
 
 
 if __name__ == "__main__":

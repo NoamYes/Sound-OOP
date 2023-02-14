@@ -1,3 +1,5 @@
+import os
+
 from information import Information
 from ml import ML
 from utils.visualize_mfcc import Visualizer
@@ -115,6 +117,7 @@ class SoundObjectOriented:
                 y_train=self.y_train,
                 X_test=self.hp.X_test,
                 X_test_CNN=self.hp.X_test_CNN,
+                y_test=self.hp.y_test,
                 testID=self.testID,
                 test_size=0.2,
                 ntrain=self.ntrain,
@@ -144,9 +147,53 @@ class SoundObjectOriented:
         def fit_best_model(self):
             self._ML_.fit_best_model(self.hp.lbl_encoder)
 
+        def evaluate_best_model(self):
+            self._ML_.evaluate_model_test()
+
         def show_predictions(self):
             return self._ML_.show_predictions()
 
         def save_predictions(self, file_name):
             self._ML_.save_predictions(file_name)
             print("The prediction is saved")
+
+        def save_models(self, file_name):
+            self._ML_.save_models(file_name)
+            print("The models are saved")
+
+        def load_models(self, file_name):
+            self._ML_.load_models(file_name)
+            print("The models are loaded")
+
+    # a static method that presists a SOUND_OOP instance
+    @staticmethod
+    def save(Sound_OOP, file_name):
+        import pickle
+
+        with open(file_name, "wb") as f:
+            pickle.dump(Sound_OOP, f)
+        print("The Sound_OOP instance is saved")
+
+    # a static method that loads a SOUND_OOP instance
+    @staticmethod
+    def load(file_name):
+        import pickle
+
+        with open(file_name, "rb") as f:
+            Sound_OOP = pickle.load(f)
+        print("The Sound_OOP instance is loaded")
+        return Sound_OOP
+
+    # a static method that presists a ML instance
+    @staticmethod
+    def persist_ml_instance(ml_instance, file_name):
+        import pickle
+
+        pickle.dump(ml_instance, open(file_name, "wb"))
+
+    # a static method that loads a ML instance from a file
+    @staticmethod
+    def load_ml_instance(file_name):
+        import pickle
+
+        return pickle.load(open(file_name, "rb"))
