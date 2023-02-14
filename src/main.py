@@ -78,6 +78,10 @@ def main():
 
     sound_oop = SoundObjectOriented()
     sound_oop.add_data(train_extracted, test_extracted, index_name="fname")
+    visualizer = sound_oop.visualizer(
+        sound_oop,
+    )
+    # visualizer.visualize_random_samples(num_classes=4, num_samples=4)
     # sound_oop.information()
     sound_oop.pre_processing()
     # sound_oop.information()
@@ -89,6 +93,9 @@ def main():
     ML.visualize_train_test()
     ML.cross_validation("all")
     ML.visualize_cv()
+    ML.fit_best_model()
+    ML.show_predictions()
+    ML.save_predictions("predictions_best_model")
 
 
 if __name__ == "__main__":

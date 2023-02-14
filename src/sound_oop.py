@@ -1,5 +1,6 @@
 from information import Information
 from ml import ML
+from utils.visualize_mfcc import Visualizer
 from processor import Processor
 
 import pandas as pd
@@ -32,7 +33,7 @@ class SoundObjectOriented:
     def add_data(self, X_train, X_test, index_name):
         # properties
         self.ntrain = X_train.shape[0]
-        self.testID = X_test.reset_index()  # .drop("index", axis=1)["Id"]
+        self.testID = X_test.reset_index()["fname"]
         self.train = X_train  # .drop("label", axis=1)
         self.test = X_test
 
@@ -69,8 +70,11 @@ class SoundObjectOriented:
             self.data,
             self.y_train,
             self.X_train,
+            self.X_train_CNN,
             self.X_test,
+            self.X_test_CNN,
             self.y_test,
+            self.lbl_encoder,
         ) = self._processor._process(self.data, self.ntrain)
         print()
         print("Data has been Pre-Processed")
@@ -84,7 +88,7 @@ class SoundObjectOriented:
             self.y_train = self.hp.y_train
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
-            self.data_vis = data_visualization
+            self.data_vis = Visualizer(self.data)
 
         def box_plot(self, columns):
             self.data_vis.box_plot(columns)
@@ -92,19 +96,25 @@ class SoundObjectOriented:
         def bar_plot(self, columns):
             self.data_vis.bar_plot(columns)
 
+        def visualize_random_samples(self, num_classes, num_samples):
+            self.data_vis.visualize_random_samples(num_classes, num_samples)
+
     class ml:
         def __init__(self, House_Price_OOP):
             self.hp = House_Price_OOP
             self.data = self.hp.data
             self.X_train = self.hp.X_train
+            self.X_train_CNN = self.hp.X_train_CNN
             self.y_train = self.hp.y_train
             self.ntrain = self.hp.ntrain
             self.testID = self.hp.testID
             self._ML_ = ML(
                 data=self.data,
                 X_train=self.X_train,
+                X_train_CNN=self.X_train_CNN,
                 y_train=self.y_train,
                 X_test=self.hp.X_test,
+                X_test_CNN=self.hp.X_test_CNN,
                 testID=self.testID,
                 test_size=0.2,
                 ntrain=self.ntrain,
@@ -132,7 +142,7 @@ class SoundObjectOriented:
             self._ML_.visualize_results(cv_train_test="cv", metrics_cv=metrics)
 
         def fit_best_model(self):
-            self._ML_.fit_best_model()
+            self._ML_.fit_best_model(self.hp.lbl_encoder)
 
         def show_predictions(self):
             return self._ML_.show_predictions()

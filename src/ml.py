@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # visualization libraries
 import plotly
@@ -35,8 +36,17 @@ from sklearn.metrics import (
 )
 import xgboost as xgb
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Input
+from keras.models import Sequential, Model
+from keras.layers import (
+    Dense,
+    Dropout,
+    Activation,
+    Input,
+    Convolution2D,
+    BatchNormalization,
+    MaxPool2D,
+    Flatten,
+)
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 
@@ -49,7 +59,17 @@ pd.options.plotting.backend = "plotly"
 
 class ML:
     def __init__(
-        self, data, X_train, y_train, X_test, testID, test_size, ntrain, nClasses=4
+        self,
+        data,
+        X_train,
+        X_train_CNN,
+        y_train,
+        X_test,
+        X_test_CNN,
+        testID,
+        test_size,
+        ntrain,
+        nClasses=4,
     ):
         print()
         print("Machine Learning object is created")
@@ -58,17 +78,19 @@ class ML:
         self.data = data
         self.ntrain = ntrain
         self.test_size = test_size
+        self.X_train_1D = X_train
         self.X_train = X_train
-        self.test = X_test
+        self.X_train_CNN = X_train_CNN
+        self.X_test_CNN = X_test_CNN
+        self.X_test = X_test
         self.testID = testID
         self.y_train = y_train[: self.ntrain]
-        self.input_shape = (self.X_train.shape[1],)
 
         self.reg_models = {}
         self.base_models = {}
 
         def build_dummy_model():
-            Input(self.input_shape)
+            Input(self.X_train_1D.shape[1:3])
             model = Sequential()
             model.add(Dense(nClasses))
             # Compile the model
@@ -79,7 +101,7 @@ class ML:
             return model
 
         def build_model_graph():
-            Input(self.input_shape)
+            Input(self.X_train_1D.shape[1:3])
             model = Sequential()
             model.add(Dense(256))
             model.add(Activation("relu"))
@@ -91,106 +113,168 @@ class ML:
             model.add(Activation("softmax"))
             # Compile the model
             model.compile(
-                loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam"
+                loss="categorical_crossentropy",
+                metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
+                optimizer="adam",
             )
 
             return model
 
+        def build_2d_conv_model():
+            inp = Input(shape=self.X_train_CNN.shape[1:3] + (1,))
+            x = Convolution2D(32, (4, 10), padding="same")(inp)
+            x = BatchNormalization()(x)
+            x = Activation("relu")(x)
+            x = MaxPool2D()(x)
+
+            x = Convolution2D(32, (4, 10), padding="same")(x)
+            x = BatchNormalization()(x)
+            x = Activation("relu")(x)
+            x = MaxPool2D()(x)
+
+            x = Convolution2D(32, (4, 10), padding="same")(x)
+            x = BatchNormalization()(x)
+            x = Activation("relu")(x)
+            x = MaxPool2D()(x)
+
+            x = Convolution2D(32, (4, 10), padding="same")(x)
+            x = BatchNormalization()(x)
+            x = Activation("relu")(x)
+            x = MaxPool2D()(x)
+
+            x = Flatten()(x)
+            x = Dense(64)(x)
+            x = BatchNormalization()(x)
+            x = Activation("relu")(x)
+            out = Dense(nClasses, activation="softmax")(x)
+
+            model = Model(inputs=inp, outputs=out)
+            opt = Adam(learning_rate=0.01)
+
+            model.compile(
+                loss="categorical_crossentropy",
+                metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
+                optimizer=opt,
+            )
+            return model
+
         # define models to test:
-        self.sklearn_models = {
-            # "Dummy Classifier Sklearn": DummyClassifier(),  # Dummy Classifier
-            # "Elastic Net": make_pipeline(
-            #     RobustScaler(),  # Elastic Net model(Regularized model)
-            #     ElasticNet(alpha=0.0005, l1_ratio=0.9),
-            # ),
-            # "Kernel Ridge": KernelRidge(),  # Kernel Ridge model(Regularized model)
-            # # "Bayesian Ridge": BayesianRidge(
-            # #     compute_score=True,  # Bayesian Ridge model
-            # #     fit_intercept=True,
-            # #     n_iter=200,
-            # #     normalize=False,
-            # # ),
-            # "Lasso": make_pipeline(
-            #     RobustScaler(),
-            #     Lasso(
-            #         alpha=0.0005, random_state=2021  # Lasso model(Regularized model)
-            #     ),
-            # ),
-            # "Lasso Lars Ic": LassoLarsIC(
-            #     criterion="aic",  # LassoLars IC model
-            #     fit_intercept=True,
-            #     max_iter=200,
-            #     normalize=True,
-            #     precompute="auto",
-            #     verbose=False,
-            # ),
-            "Random Forest": RandomForestClassifier(
-                n_estimators=300
-            ),  # Random Forest model
-            # # "Svm": SVR(),  # Support Vector Machines
-            # "Xgboost": XGBClassifier(
-            #     max_depth=5,
-            #     n_estimators=300,
-            #     nthread=-1,
-            #     learning_rate=0.1,
-            #     random_state=2023,
-            #     reg_alpha=0.3,
-            #     reg_lambda=0.1,
-            #     colsample_bytree=0.3,
-            #     colsample_bylevel=0.8,
-            #     objective="multi:softprob",
-            #     verbosity=2,
-            # ),  # XGBoost model
-            # "Gradient Boosting": make_pipeline(
-            #     StandardScaler(),
-            #     GradientBoostingClassifier(
-            #         n_estimators=1,  # GradientBoosting model
-            #         learning_rate=0.15,
-            #         max_depth=1,
-            #         max_features="sqrt",
-            #         min_samples_leaf=15,
-            #         min_samples_split=10,
-            #         # loss="log_loss",
-            #         random_state=2021,
-            #         verbose=3,
-            #     ),
-            # ),
+        self.sklearn = {
+            "X_train": self.X_train_1D,
+            "models": {
+                "Dummy Classifier Sklearn": DummyClassifier(),  # Dummy Classifier
+                # "Elastic Net": make_pipeline(
+                #     RobustScaler(),  # Elastic Net model(Regularized model)
+                #     ElasticNet(alpha=0.0005, l1_ratio=0.9),
+                # ),
+                # "Kernel Ridge": KernelRidge(),  # Kernel Ridge model(Regularized model)
+                # # "Bayesian Ridge": BayesianRidge(
+                # #     compute_score=True,  # Bayesian Ridge model
+                # #     fit_intercept=True,
+                # #     n_iter=200,
+                # #     normalize=False,
+                # # ),
+                # "Lasso": make_pipeline(
+                #     RobustScaler(),
+                #     Lasso(
+                #         alpha=0.0005, random_state=2021  # Lasso model(Regularized model)
+                #     ),
+                # ),
+                # "Lasso Lars Ic": LassoLarsIC(
+                #     criterion="aic",  # LassoLars IC model
+                #     fit_intercept=True,
+                #     max_iter=200,
+                #     normalize=True,
+                #     precompute="auto",
+                #     verbose=False,
+                # ),
+                # "Random Forest": RandomForestClassifier(
+                #     n_estimators=300
+                # ),  # Random Forest model
+                # # "Svm": SVR(),  # Support Vector Machines
+                # "Xgboost": XGBClassifier(
+                #     max_depth=5,
+                #     n_estimators=300,
+                #     nthread=-1,
+                #     learning_rate=0.1,
+                #     random_state=2023,
+                #     reg_alpha=0.3,
+                #     reg_lambda=0.1,
+                #     colsample_bytree=0.3,
+                #     colsample_bylevel=0.8,
+                #     objective="multi:softprob",
+                #     verbosity=2,
+                # ),  # XGBoost model
+                # "Gradient Boosting": make_pipeline(
+                #     StandardScaler(),
+                #     GradientBoostingClassifier(
+                #         n_estimators=1,  # GradientBoosting model
+                #         learning_rate=0.15,
+                #         max_depth=1,
+                #         max_features="sqrt",
+                #         min_samples_leaf=15,
+                #         min_samples_split=10,
+                #         # loss="log_loss",
+                #         random_state=2021,
+                #         verbose=3,
+                #     ),
+                # ),
+            },
         }
 
         # keras models
-        self.keras_models = {
-            # "Dummy Classifier Keras": KerasClassifier(
-            #     build_dummy_model,
-            #     epochs=10,
-            #     batch_size=32,
-            #     verbose=0,
+        self.keras = {
+            "X_train": self.X_train_1D,
+            "models": {
+                # "Dummy Classifier Keras": KerasClassifier(
+                #     build_dummy_model,
+                #     epochs=1,
+                #     batch_size=32,
+                #     verbose=0,
+                # ),
+            }
+            # "Neural Network1": KerasClassifier(
+            #     build_model_graph,
+            #     epochs=100,
+            #     # batch_size=32,
+            #     # verbose=3,
             # ),
-            "Neural Network": KerasClassifier(
-                build_model_graph,
-                epochs=100,
-                # batch_size=32,
-                # verbose=3,
-            ),
+        }
+
+        self.cnn = {
+            "X_train": self.X_train_CNN,
+            "models": {
+                "Cnn": KerasClassifier(
+                    build_2d_conv_model,
+                    epochs=100,
+                    # batch_size=32,
+                    # verbose=3,
+                ),
+            },
         }
 
     def model_type(self, model):
-        if model in self.sklearn_models.keys():
+        if model in self.sklearn["models"].keys():
             return "sklearn"
-        elif model in self.keras_models.keys():
+        elif model in self.keras["models"].keys():
             return "keras"
+        elif model in self.cnn["models"].keys():
+            return "cnn"
         else:
             return "unknown"
 
     def init_ml_classifiers(self, algorithms):
         if algorithms.lower() == "all":
-            for model in self.sklearn_models.keys():
-                self.reg_models[model.title()] = self.sklearn_models[model.title()]
+            for model in self.sklearn["models"].keys():
+                self.reg_models[model.title()] = self.sklearn["models"][model.title()]
                 print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
-            for model in self.keras_models.keys():
-                self.reg_models[model.title()] = self.keras_models[model.title()]
+            for model in self.keras["models"].keys():
+                self.reg_models[model.title()] = self.keras["models"][model.title()]
+                print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
+            for model in self.cnn["models"].keys():
+                self.reg_models[model.title()] = self.cnn["models"][model.title()]
                 print(model.title(), (20 - len(str(model))) * "=", ">", "Initialized")
             self.base_models = self.reg_models
-
         else:
             for model in algorithms:
                 if model.lower() in [x.lower() for x in self.base_models.keys()]:
@@ -222,47 +306,47 @@ class ML:
         if not self.reg_models:
             raise TypeError("Add models first before fitting")
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.X_train,
-            self.y_train,
-            test_size=self.test_size,
-            random_state=2021,
-        )
-
         # Preprocessing, fitting, making predictions and scoring for every model:
         self.result_data = {
             # "R^2": {"Training": {}, "Testing": {}},
             "F1_score": {"Training": {}, "Testing": {}},
         }
 
-        self.p = self.X_train.shape[1]
-        self.X_train_n = self.X_train.shape[0]
-        self.test_n = self.X_test.shape[0]
-
         for name, reg_model in self.reg_models.items():
+
+            # if the model is from cnn then take cnn train
+            if self.model_type(name) == "cnn":
+                X_train = self.cnn["X_train"]
+            elif self.model_type(name) == "keras":
+                X_train = self.keras["X_train"]
+            elif self.model_type(name) == "sklearn":
+                X_train = self.sklearn["X_train"]
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_train,
+                self.y_train,
+                test_size=self.test_size,
+                random_state=2021,
+            )
+
             # fitting the model
             if self.model_type(name) == "sklearn":
-                reg_model = reg_model.fit(self.X_train, self.y_train)
-            elif self.model_type(name) == "keras":
+                reg_model = reg_model.fit(X_train, y_train)
+            elif self.model_type(name) == "keras" or self.model_type(name) == "cnn":
                 history = reg_model.fit(
-                    self.X_train,
-                    to_categorical(self.y_train),
+                    X_train,
+                    to_categorical(y_train),
                     # epochs=25,
                     # batch_size=32,
                     # verbose=3,
                 )
             # make predictions with train and test datasets
-            y_pred_train = reg_model.predict(self.X_train)
-            y_pred_test = reg_model.predict(self.X_test)
+            y_pred_train = reg_model.predict(X_train)
+            y_pred_test = reg_model.predict(X_test)
 
             # calculate the F1 score for training and testing
-            f1_score_train = f1_score(self.y_train, y_pred_train, average="weighted")
-            f1_score_test = f1_score(self.y_test, y_pred_test, average="weighted")
+            f1_score_train = f1_score(y_train, y_pred_train, average="weighted")
+            f1_score_test = f1_score(y_test, y_pred_test, average="weighted")
 
-            # calculate the R-Squared for training and testing
-            # r2_train, r2_test = model.score(self.X_train, self.y_train), model.score(
-            #     self.X_test, self.y_test
-            # )
             (
                 self.result_data["F1_score"]["Training"][name],
                 self.result_data["F1_score"]["Testing"][name],
@@ -329,9 +413,13 @@ class ML:
 
         for name, _ in models_name.items():
             model = self.base_models[name]
+            if self.model_type(name) == "cnn":
+                X_train = self.cnn["X_train"]
+            else:
+                X_train = self.X_train
             results = cross_validate(
                 model,
-                self.X_train,
+                X_train,
                 self.y_train,
                 scoring=scoring,
                 cv=kfold,
@@ -427,76 +515,41 @@ class ML:
                         title="F1 Score for training and testing",
                     )
                     fig.show()
-
-                # elif parm.lower() == "adjusted r_squared":
-                #     # order the results by testing values
-                #     fig = px.line(
-                #         data_frame=Adjusted_R_2.reset_index(),
-                #         x="index",
-                #         y=["Training", "Testing"],
-                #         title="Adjusted R-Squared for training and testing",
-                #     )
-                #     fig.show()
-
-                # elif parm.lower() == "mae":
-                #     # order the results by testing values
-                #     fig = px.line(
-                #         data_frame=MAE.reset_index(),
-                #         x="index",
-                #         y=["Training", "Testing"],
-                #         title="Mean absolute error for training and testing",
-                #     )
-                #     fig.show()
-
-                # elif parm.lower() == "mse":
-                #     # order the results by testing values
-                #     fig = px.line(
-                #         data_frame=MSE.reset_index(),
-                #         x="index",
-                #         y=["Training", "Testing"],
-                #         title="Mean square error for training and testing",
-                #     )
-                #     fig.show()
-
-                # elif parm.lower() == "rmse":
-                #     # order the results by testing values
-                #     fig = px.line(
-                #         data_frame=RMSE.reset_index(),
-                #         x="index",
-                #         y=["Training", "Testing"],
-                #         title="Root mean square error for training and testing",
-                #     )
-                #     fig.show()
-
                 else:
                     print("Only (F1)")
 
         else:
             raise TypeError("Only (CV , Train Test)")
 
-    # def fit_best_model(self):
-    #     self.models = list(self.f1_results["Mean"].keys())
-    #     self.f1_results_vals = np.array([r for _, r in self.f1_results["Mean"].items()])
-    #     self.rmse_results_vals = np.array(
-    #         [r for _, r in self.rmse_results["Mean"].items()]
-    #     )
-    #     self.best_model_name = self.models[
-    #         np.argmax(self.f1_results_vals - self.rmse_results_vals)
-    #     ]
-    #     print()
-    #     print(30 * "=")
-    #     print("The best model is ====> ", self.best_model_name)
-    #     print("It has the highest (R-Squared) and the lowest (Root Mean Square Erorr)")
-    #     print(30 * "=")
-    #     print()
-    #     self.best_model = self.base_models[self.best_model_name]
-    #     self.best_model.fit(self.X_train, self.y_train)
-    #     print(self.best_model_name, " is fitted to the data!")
-    #     print()
-    #     print(30 * "=")
-    #     self.y_pred = self.best_model.predict(self.test)
-    #     self.y_pred = np.expm1(self.y_pred)  # using expm1 (The inverse of log1p)
-    #     self.temp = pd.DataFrame({"Id": self.testID, "SalePrice": self.y_pred})
+    def fit_best_model(self, lbl_enc):
+        self.models = list(self.f1_results["Mean"].keys())
+        self.f1_results_vals = np.array([r for _, r in self.f1_results["Mean"].items()])
+        self.best_model_name = self.models[np.argmax(self.f1_results_vals)]
+        print()
+        print(30 * "=")
+        print("The best model is ====> ", self.best_model_name)
+        print("It has the highest (R-Squared) and the lowest (Root Mean Square Erorr)")
+        print(30 * "=")
+        print()
+        self.best_model = self.base_models[self.best_model_name]
+        # choose X_train and X_test based on the model type
+        if self.model_type(self.best_model_name) == "cnn":
+            X_train = self.cnn["X_train"]
+            X_test = self.X_test_CNN
+        else:
+            X_train = self.X_train_1D
+            X_test = self.X_test
+        self.best_model.fit(X_train, self.y_train)
+        print(self.best_model_name, " is fitted to the data!")
+        print()
+        print(30 * "=")
+        self.y_pred = self.best_model.predict(X_test)
+        self.temp = pd.DataFrame(
+            {
+                "File name": self.testID,
+                "SoundLabel": lbl_enc.inverse_transform(self.y_pred),
+            }
+        )
 
     def show_predictions(self):
         return self.temp

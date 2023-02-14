@@ -40,7 +40,7 @@ class Processor:
         # self.data = self._preprocessor.extract_features()
 
         # label encoder
-        self.data = self._preprocessor.label_encoder(self.data, cat_cols)
+        self.data, lbl_encoder = self._preprocessor.label_encoder(self.data, cat_cols)
 
         # extract y_train and y_test
         self.y_train = self.data["label"].to_numpy()[: self.ntrain]
@@ -53,11 +53,19 @@ class Processor:
         self.data = self._preprocessor.norm_data(num_cols[0])
 
         # undersample features
-        self.data = self._preprocessor.under_sample_features(num_cols[0], 4)
+        # self.data = self._preprocessor.under_sample_features(num_cols[0], 4)
+
+        self.X_train_2D = np.stack(
+            np.squeeze(self.data[: self.ntrain][num_cols].to_numpy())
+        )
+
+        self.X_test_2D = np.stack(
+            np.squeeze(self.data[self.ntrain :][num_cols].to_numpy())
+        )
 
         # calculate mean of each frame row wise
 
-        self.data = self._preprocessor.average_frame_features(num_cols[0])
+        # self.data = self._preprocessor.average_frame_features(num_cols[0])
 
         # flatten num col values
         self.data = self._preprocessor.flatten_data(num_cols[0])
@@ -71,4 +79,13 @@ class Processor:
             np.squeeze(self.data[self.ntrain :][num_cols].to_numpy())
         )
 
-        return self.data, self.y_train, self.X_train, self.X_test, self.y_test
+        return (
+            self.data,
+            self.y_train,
+            self.X_train,
+            self.X_train_2D,
+            self.X_test,
+            self.X_test_2D,
+            self.y_test,
+            lbl_encoder,
+        )

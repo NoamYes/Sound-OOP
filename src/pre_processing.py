@@ -174,7 +174,7 @@ class PreProcessing:
             lambda x: lbl.fit_transform(x.astype(str)).astype(int)
         )
 
-        return df
+        return df, lbl
 
     def get_dummies(self, columns):
         """
