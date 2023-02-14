@@ -94,7 +94,7 @@ class ML:
         self.y_train = y_train[: self.ntrain]
 
         self.reg_models = {}
-        self.base_models = {}
+        self.final_models = {}
 
         def build_dummy_model():
             Input(self.X_train_1D.shape[1:3])
@@ -278,12 +278,12 @@ class ML:
         for model in self.cnn["models"].keys():
             self.reg_models[model.title()] = self.cnn["models"][model.title()]
         if str(algorithms).lower() == "all":
-            self.base_models = self.reg_models
+            self.final_models = self.reg_models
         else:
             for model in algorithms:
                 if model.lower() in [x.lower() for x in self.reg_models.keys()]:
-                    self.base_models[model] = self.reg_models[model]
-                    # print(self.base_models[model])
+                    self.final_models[model] = self.reg_models[model]
+                    # print(self.final_models[model])
                     print(
                         model.title(), (20 - len(str(model))) * "=", ">", "Initialized"
                     )
@@ -303,7 +303,7 @@ class ML:
         print(50 * "=")
         print("You can fit your data with the following models")
         print(50 * "=", "\n")
-        for model in [m.title() for m in self.base_models.keys()]:
+        for model in [m.title() for m in self.final_models.keys()]:
             print(model)
         print("\n", 50 * "=", "\n")
 
@@ -317,7 +317,7 @@ class ML:
             "F1_score": {"Training": {}, "Testing": {}},
         }
 
-        for name, reg_model in self.base_models.items():
+        for name, reg_model in self.final_models.items():
 
             # if the model is from cnn then take cnn train
             if self.model_type(name) == "cnn":
@@ -394,7 +394,7 @@ class ML:
             )
             print()
 
-            num_models = min(num_models, len(self.base_models.keys()))
+            num_models = min(num_models, len(self.final_models.keys()))
             models_name = {
                 i: adj_f1_score_sort[i]
                 for i in list(adj_f1_score_sort.keys())[:num_models]
@@ -417,7 +417,7 @@ class ML:
         }
 
         for name, _ in models_name.items():
-            model = self.base_models[name]
+            model = self.final_models[name]
             if self.model_type(name) == "cnn":
                 X_train = self.cnn["X_train"]
             else:
@@ -536,7 +536,7 @@ class ML:
         print("It has the highest (R-Squared) and the lowest (Root Mean Square Erorr)")
         print(30 * "=")
         print()
-        self.best_model = self.base_models[self.best_model_name]
+        self.best_model = self.final_models[self.best_model_name]
         # choose X_train and X_test based on the model type
         if self.model_type(self.best_model_name) == "cnn":
             X_train = self.cnn["X_train"]
@@ -583,7 +583,7 @@ class ML:
 
     def save_models(self, directory):
         # save all of the fitted models to certain directory
-        for name, model in self.base_models.items():
+        for name, model in self.final_models.items():
             # save model with its name, its type and the date (with minutes) delimited with underscore
             file_name = "{}_{}_{}.sav".format(
                 name, self.model_type(name), datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -592,11 +592,11 @@ class ML:
 
     def load_models(self, directory):
         # load all of the fitted models from certain directory
-        self.base_models = {}
+        self.final_models = {}
         for file in os.listdir(directory):
             if file.endswith(".sav"):
                 model = pickle.load(open(directory + file, "rb"))
-                self.base_models[file.split("_")[0]] = model
+                self.final_models[file.split("_")[0]] = model
 
     def show_predictions(self):
         return self.temp
