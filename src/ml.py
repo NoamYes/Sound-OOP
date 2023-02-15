@@ -61,6 +61,80 @@ from keras.wrappers.scikit_learn import KerasClassifier
 
 pd.options.plotting.backend = "plotly"
 
+# define build models functions
+
+
+def build_dummy_model(input_shape, nClasses):
+    Input(input_shape)
+    model = Sequential()
+    model.add(Dense(nClasses))
+    # Compile the model
+    model.compile(
+        loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam"
+    )
+
+    return model
+
+
+def build_model_graph(input_shape, nClasses):
+    Input(self.X_train_1D.shape[1:3])
+    model = Sequential()
+    model.add(Dense(256))
+    model.add(Activation("relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(256))
+    model.add(Activation("relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(nClasses))
+    model.add(Activation("softmax"))
+    # Compile the model
+    model.compile(
+        loss="categorical_crossentropy",
+        metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
+        optimizer="adam",
+    )
+
+    return model
+
+
+def build_2d_conv_model(input_shape, nClasses):
+    inp = Input(shape=self.X_train_CNN.shape[1:3] + (1,))
+    x = Convolution2D(32, (4, 10), padding="same")(inp)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
+    x = MaxPool2D()(x)
+
+    x = Convolution2D(32, (4, 10), padding="same")(x)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
+    x = MaxPool2D()(x)
+
+    x = Convolution2D(32, (4, 10), padding="same")(x)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
+    x = MaxPool2D()(x)
+
+    x = Convolution2D(32, (4, 10), padding="same")(x)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
+    x = MaxPool2D()(x)
+
+    x = Flatten()(x)
+    x = Dense(64)(x)
+    x = BatchNormalization()(x)
+    x = Activation("relu")(x)
+    out = Dense(nClasses, activation="softmax")(x)
+
+    model = Model(inputs=inp, outputs=out)
+    opt = Adam(learning_rate=0.01)
+
+    model.compile(
+        loss="categorical_crossentropy",
+        metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
+        optimizer=opt,
+    )
+    return model
+
 
 class ML:
     def __init__(
@@ -95,75 +169,6 @@ class ML:
 
         self.reg_models = {}
         self.final_models = {}
-
-        def build_dummy_model():
-            Input(self.X_train_1D.shape[1:3])
-            model = Sequential()
-            model.add(Dense(nClasses))
-            # Compile the model
-            model.compile(
-                loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam"
-            )
-
-            return model
-
-        def build_model_graph():
-            Input(self.X_train_1D.shape[1:3])
-            model = Sequential()
-            model.add(Dense(256))
-            model.add(Activation("relu"))
-            model.add(Dropout(0.5))
-            model.add(Dense(256))
-            model.add(Activation("relu"))
-            model.add(Dropout(0.5))
-            model.add(Dense(nClasses))
-            model.add(Activation("softmax"))
-            # Compile the model
-            model.compile(
-                loss="categorical_crossentropy",
-                metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
-                optimizer="adam",
-            )
-
-            return model
-
-        def build_2d_conv_model():
-            inp = Input(shape=self.X_train_CNN.shape[1:3] + (1,))
-            x = Convolution2D(32, (4, 10), padding="same")(inp)
-            x = BatchNormalization()(x)
-            x = Activation("relu")(x)
-            x = MaxPool2D()(x)
-
-            x = Convolution2D(32, (4, 10), padding="same")(x)
-            x = BatchNormalization()(x)
-            x = Activation("relu")(x)
-            x = MaxPool2D()(x)
-
-            x = Convolution2D(32, (4, 10), padding="same")(x)
-            x = BatchNormalization()(x)
-            x = Activation("relu")(x)
-            x = MaxPool2D()(x)
-
-            x = Convolution2D(32, (4, 10), padding="same")(x)
-            x = BatchNormalization()(x)
-            x = Activation("relu")(x)
-            x = MaxPool2D()(x)
-
-            x = Flatten()(x)
-            x = Dense(64)(x)
-            x = BatchNormalization()(x)
-            x = Activation("relu")(x)
-            out = Dense(nClasses, activation="softmax")(x)
-
-            model = Model(inputs=inp, outputs=out)
-            opt = Adam(learning_rate=0.01)
-
-            model.compile(
-                loss="categorical_crossentropy",
-                metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
-                optimizer=opt,
-            )
-            return model
 
         # define models to test:
         self.sklearn = {
@@ -235,6 +240,8 @@ class ML:
             "models": {
                 "Dummy Classifier Keras": KerasClassifier(
                     build_dummy_model,
+                    input_shape=self.X_train_1D.shape[1:3],
+                    nClasses=nClasses,
                     epochs=1,
                     batch_size=32,
                     verbose=0,
@@ -242,6 +249,8 @@ class ML:
             }
             # "Neural Network1": KerasClassifier(
             #     build_model_graph,
+            # input_shape=self.X_train_1D.shape[1:3],
+            # nClasses=nClasses,
             #     epochs=100,
             #     # batch_size=32,
             #     # verbose=3,
@@ -253,6 +262,8 @@ class ML:
             "models": {
                 "Cnn": KerasClassifier(
                     build_2d_conv_model,
+                    input_shape=self.X_train_1D.shape[1:3],
+                    nClasses=nClasses,
                     epochs=100,
                     # batch_size=32,
                     # verbose=3,
