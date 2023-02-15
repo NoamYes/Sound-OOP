@@ -92,7 +92,9 @@ def main():
     ML = sound_oop.ml(sound_oop)
     ML.show_available_algorithms()
     # ML.init_classifiers(["Dummy Classifier Keras", "Cnn"])
-    ML.init_classifiers(["Dummy Classifier Keras"])
+    # ML.init_classifiers(["Dummy Classifier Keras"])
+    ML.init_classifiers(["Cnn"])
+    # ML.init_classifiers("all")
     # ML.init_classifiers(["Dummy Classifier Keras", "Cnn"])
 
     ML.train_test_validation()

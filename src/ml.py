@@ -77,7 +77,7 @@ def build_dummy_model(input_shape, nClasses):
 
 
 def build_model_graph(input_shape, nClasses):
-    Input(self.X_train_1D.shape[1:3])
+    Input(input_shape)
     model = Sequential()
     model.add(Dense(256))
     model.add(Activation("relu"))
@@ -98,7 +98,7 @@ def build_model_graph(input_shape, nClasses):
 
 
 def build_2d_conv_model(input_shape, nClasses):
-    inp = Input(shape=self.X_train_CNN.shape[1:3] + (1,))
+    inp = Input(input_shape + (1,))
     x = Convolution2D(32, (4, 10), padding="same")(inp)
     x = BatchNormalization()(x)
     x = Activation("relu")(x)
@@ -262,7 +262,7 @@ class ML:
             "models": {
                 "Cnn": KerasClassifier(
                     build_2d_conv_model,
-                    input_shape=self.X_train_1D.shape[1:3],
+                    input_shape=self.X_train_CNN.shape[1:3],
                     nClasses=nClasses,
                     epochs=100,
                     # batch_size=32,
