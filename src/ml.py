@@ -30,11 +30,11 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
+    roc_auc_score,
     make_scorer,
-    mean_squared_error,
-    mean_absolute_error,
     precision_score,
-    r2_score,
+    matthews_corrcoef,
+    log_loss,
     recall_score,
     confusion_matrix,
     classification_report,
@@ -192,6 +192,9 @@ class ML:
         # prepare configuration for cross validation test
         # Create two dictionaries to store the results of f1_score
         self.f1_results = {"F1_score": {}, "Mean": {}, "std": {}}
+        self.accuracy_results = {"Accuracy": {}, "Mean": {}, "std": {}}
+        self.mathews_corr_results = {"Mathews_corr": {}, "Mean": {}, "std": {}}
+        self.precision_results = {"Precision": {}, "Mean": {}, "std": {}}
 
     def model_type(self, model):
         if model in self.sklearn["models"].keys():
@@ -323,6 +326,7 @@ class ML:
             "precision": make_scorer(precision_score, average="weighted"),
             "recall": make_scorer(recall_score, average="weighted"),
             "f1_score": make_scorer(f1_score, average="weighted"),
+            "matthews_corrcoef": make_scorer(matthews_corrcoef),
         }
 
         for name in models_name:
@@ -355,6 +359,22 @@ class ML:
         self.f1_results["F1_score"][model_name] = cv_results["test_f1_score"]
         self.f1_results["Mean"][model_name] = cv_results["test_f1_score"].mean()
         self.f1_results["std"][model_name] = cv_results["test_f1_score"].std()
+
+        # calculate model results and append it to precision_results dictionary
+        self.precision_results["Precision"][model_name] = cv_results["test_precision"]
+        self.precision_results["Mean"][model_name] = cv_results["test_precision"].mean()
+        self.precision_results["std"][model_name] = cv_results["test_precision"].std()
+
+        # calculate model results and append it to matt_results dictionary
+        self.mathews_corr_results["Mathews_corr"][model_name] = cv_results[
+            "test_matthews_corrcoef"
+        ]
+        self.mathews_corr_results["Mean"][model_name] = cv_results[
+            "test_matthews_corrcoef"
+        ].mean()
+        self.mathews_corr_results["std"][model_name] = cv_results[
+            "test_matthews_corrcoef"
+        ].std()
 
     def visualize_results(
         self,
