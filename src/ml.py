@@ -41,99 +41,16 @@ from sklearn.metrics import (
 )
 import xgboost as xgb
 
-from keras.models import Sequential, Model
-from keras.layers import (
-    Dense,
-    Dropout,
-    Activation,
-    Input,
-    Convolution2D,
-    BatchNormalization,
-    MaxPool2D,
-    Flatten,
-)
-from keras.optimizers import Adam
 from keras.utils import to_categorical
 
 from keras.wrappers.scikit_learn import KerasClassifier
 
+from build_models import build_model_graph, build_2d_conv_model, build_dummy_model
+
+
 # from scikeras.wrappers import KerasClassifier
 
 pd.options.plotting.backend = "plotly"
-
-# define build models functions
-
-
-def build_dummy_model(input_shape, nClasses):
-    Input(input_shape)
-    model = Sequential()
-    model.add(Dense(nClasses))
-    # Compile the model
-    model.compile(
-        loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam"
-    )
-
-    return model
-
-
-def build_model_graph(input_shape, nClasses):
-    Input(input_shape)
-    model = Sequential()
-    model.add(Dense(256))
-    model.add(Activation("relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(256))
-    model.add(Activation("relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(nClasses))
-    model.add(Activation("softmax"))
-    # Compile the model
-    model.compile(
-        loss="categorical_crossentropy",
-        metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
-        optimizer="adam",
-    )
-
-    return model
-
-
-def build_2d_conv_model(input_shape, nClasses):
-    inp = Input(input_shape + (1,))
-    x = Convolution2D(32, (4, 10), padding="same")(inp)
-    x = BatchNormalization()(x)
-    x = Activation("relu")(x)
-    x = MaxPool2D()(x)
-
-    x = Convolution2D(32, (4, 10), padding="same")(x)
-    x = BatchNormalization()(x)
-    x = Activation("relu")(x)
-    x = MaxPool2D()(x)
-
-    x = Convolution2D(32, (4, 10), padding="same")(x)
-    x = BatchNormalization()(x)
-    x = Activation("relu")(x)
-    x = MaxPool2D()(x)
-
-    x = Convolution2D(32, (4, 10), padding="same")(x)
-    x = BatchNormalization()(x)
-    x = Activation("relu")(x)
-    x = MaxPool2D()(x)
-
-    x = Flatten()(x)
-    x = Dense(64)(x)
-    x = BatchNormalization()(x)
-    x = Activation("relu")(x)
-    out = Dense(nClasses, activation="softmax")(x)
-
-    model = Model(inputs=inp, outputs=out)
-    opt = Adam(learning_rate=0.01)
-
-    model.compile(
-        loss="categorical_crossentropy",
-        metrics=["accuracy", "AUC", "Precision", "categorical_crossentropy"],
-        optimizer=opt,
-    )
-    return model
 
 
 class ML:
@@ -169,6 +86,7 @@ class ML:
 
         self.reg_models = {}
         self.final_models = {}
+        self.model_results = {}
 
         # define models to test:
         self.sklearn = {
@@ -271,6 +189,10 @@ class ML:
             },
         }
 
+        # prepare configuration for cross validation test
+        # Create two dictionaries to store the results of f1_score
+        self.f1_results = {"F1_score": {}, "Mean": {}, "std": {}}
+
     def model_type(self, model):
         if model in self.sklearn["models"].keys():
             return "sklearn"
@@ -310,25 +232,17 @@ class ML:
                         "# Only (Elastic Net,Kernel Ridge,Lasso,Random Forest,SVM,XGBoost,LGBM,Gradient Boosting,Linear Regression)"
                     )
 
-    def show_available(self):
-        print(50 * "=")
-        print("You can fit your data with the following models")
-        print(50 * "=", "\n")
-        for model in [m.title() for m in self.final_models.keys()]:
-            print(model)
-        print("\n", 50 * "=", "\n")
-
     def train_test_eval_show_results(self, show=True):
-        if not self.reg_models:
+        if not self.final_models:
             raise TypeError("Add models first before fitting")
 
         # Preprocessing, fitting, making predictions and scoring for every model:
-        self.result_data = {
+        self.initial_results = {
             # "R^2": {"Training": {}, "Testing": {}},
             "F1_score": {"Training": {}, "Testing": {}},
         }
 
-        for name, reg_model in self.final_models.items():
+        for name, model in self.final_models.items():
 
             # if the model is from cnn then take cnn train
             if self.model_type(name) == "cnn":
@@ -346,9 +260,9 @@ class ML:
 
             # fitting the model
             if self.model_type(name) == "sklearn":
-                reg_model = reg_model.fit(X_train, y_train)
+                model = model.fit(X_train, y_train)
             elif self.model_type(name) == "keras" or self.model_type(name) == "cnn":
-                history = reg_model.fit(
+                history = model.fit(
                     X_train,
                     to_categorical(y_train),
                     # epochs=25,
@@ -356,16 +270,24 @@ class ML:
                     # verbose=3,
                 )
             # make predictions with train and test datasets
-            y_pred_train = reg_model.predict(X_train)
-            y_pred_test = reg_model.predict(X_test)
+            y_pred_train = model.predict(X_train)
+            y_pred_test = model.predict(X_test)
 
             # calculate the F1 score for training and testing
             f1_score_train = f1_score(y_train, y_pred_train, average="weighted")
             f1_score_test = f1_score(y_test, y_pred_test, average="weighted")
 
+            # store the results in model results dictionary
+            self.model_results[name] = {
+                "F1_score": {
+                    "Training": f1_score_train,
+                    "Testing": f1_score_test,
+                }
+            }
+
             (
-                self.result_data["F1_score"]["Training"][name],
-                self.result_data["F1_score"]["Testing"][name],
+                self.initial_results["F1_score"]["Training"][name],
+                self.initial_results["F1_score"]["Testing"][name],
             ) = (f1_score_train, f1_score_test)
 
             if show:
@@ -378,42 +300,18 @@ class ML:
                     f1_score_test,
                 )
 
-    def cv_eval_show_results(self, num_models=4, n_folds=5, show=False):
-        # prepare configuration for cross validation test
-        # Create two dictionaries to store the results of f1_score
-        self.f1_results = {"F1_score": {}, "Mean": {}, "std": {}}
-
-        # create a dictionary contains best f1 score results, then sort it
-        adj = self.result_data["F1_score"]["Testing"]
-        adj_f1_score_sort = dict(sorted(adj.items(), key=lambda x: x[1], reverse=True))
+    def cv_eval_show_results(self, num_models, n_folds=5, show=False):
 
         # check the number of models to visualize results
         if str(num_models).lower() == "all":
-            models_name = {
-                i: adj_f1_score_sort[i] for i in list(adj_f1_score_sort.keys())
-            }
+            models_name = self.final_models.keys()
             print()
             print("Apply Cross-Validation for {} models".format(num_models))
             print()
 
         else:
-            print()
-            print(
-                "Apply Cross-Validation for {} models have highest Adjusted F1_score value on Testing".format(
-                    num_models
-                )
-            )
-            print()
-
-            num_models = min(num_models, len(self.final_models.keys()))
-            models_name = {
-                i: adj_f1_score_sort[i]
-                for i in list(adj_f1_score_sort.keys())[:num_models]
-            }
-
-        models_name = dict(
-            sorted(models_name.items(), key=lambda x: x[1], reverse=True)
-        )
+            # return error
+            raise TypeError("num_models should be 'all'")
 
         # create Kfold for the cross-validation
         kfold = StratifiedKFold(
@@ -427,13 +325,13 @@ class ML:
             "f1_score": make_scorer(f1_score, average="weighted"),
         }
 
-        for name, _ in models_name.items():
+        for name in models_name:
             model = self.final_models[name]
             if self.model_type(name) == "cnn":
                 X_train = self.cnn["X_train"]
             else:
                 X_train = self.X_train
-            results = cross_validate(
+            cv_results = cross_validate(
                 model,
                 X_train,
                 self.y_train,
@@ -441,15 +339,22 @@ class ML:
                 cv=kfold,
             )
 
-            # save the f1 score reults
-            self.f1_results["F1_score"][name] = results["test_f1_score"]
-            self.f1_results["Mean"][name] = results["test_f1_score"].mean()
-            self.f1_results["std"][name] = results["test_f1_score"].std()
+            # add to model results
+            self.model_results[name] = {"cv_results": cv_results}
+
+            # add to f1_results
+            self.calc_model_cv_results(name, cv_results)
 
             print(name, (30 - len(name)) * "=", ">", "is Done!")
 
         if show:
             return self.f1_results  # , self.rmse_results
+
+    def calc_model_cv_results(self, model_name, cv_results):
+        # calculate model results and append it to f1_results dictionary
+        self.f1_results["F1_score"][model_name] = cv_results["test_f1_score"]
+        self.f1_results["Mean"][model_name] = cv_results["test_f1_score"].mean()
+        self.f1_results["std"][model_name] = cv_results["test_f1_score"].std()
 
     def visualize_results(
         self,
@@ -517,7 +422,7 @@ class ML:
                     print("Not avilable")
 
         elif cv_train_test.lower() == "train test":
-            F1 = pd.DataFrame(self.result_data["F1_score"]).sort_values(
+            F1 = pd.DataFrame(self.initial_results["F1_score"]).sort_values(
                 by="Testing", ascending=False
             )
 
@@ -567,50 +472,73 @@ class ML:
             }
         )
 
-    def evaluate_model_test(self):
+    def evaluate_model_test(self, model, show=False):
         # choose X_train and X_test based on the model type and save it to file
-        if self.model_type(self.best_model_name) == "cnn":
-            X_train = self.cnn["X_train"]
+        if self.model_type(model) == "cnn":
             X_test = self.X_test_CNN
         else:
-            X_train = self.X_train_1D
             X_test = self.X_test
-        self.y_pred = self.best_model.predict(X_test)
-        self.f1 = f1_score(self.y_test, self.y_pred, average="weighted")
-        self.confusion_matrix = confusion_matrix(self.y_test, self.y_pred)
-        self.classification_report = classification_report(
-            self.y_test, self.y_pred, output_dict=True
-        )
-        self.accuracy = accuracy_score(self.y_test, self.y_pred)
-        print("F1 Score: ", self.f1)
-        print("Accuracy: ", self.accuracy)
-        print("Confusion Matrix: \n", self.confusion_matrix)
-        print("Classification Report: \n", self.classification_report)
-        print(30 * "=")
-        print()
 
-    def ignore(self):
-        pass
+        test_results = {}
+        y_pred = model.predict(X_test)
+        test_results["f1"] = f1_score(self.y_test, y_pred, average="weighted")
+        test_results["confusion_matrix"] = confusion_matrix(self.y_test, y_pred)
+        test_results["classification_report"] = classification_report(
+            self.y_test, y_pred, output_dict=True
+        )
+        test_results["accuracy"] = accuracy_score(self.y_test, self.y_pred)
+        if show:
+            print(30 * "=")
+            print("F1 Score: ", test_results["f1"])
+            print("Accuracy: ", test_results["accuracy"])
+            print("Confusion Matrix: \n", test_results["confusion_matrix"])
+            print("Classification Report: \n", test_results["classification_report"])
+            print(30 * "=")
+            print()
+
+        return test_results
+
+    def evaluate_best_model(self):
+        return self.evaluate_model_test(self.best_model, show=True)
 
     def save_models(self, directory):
-        # save all of the fitted models to certain directory
+        # save all of the fitted models and their results to certain directory
         for name, model in self.final_models.items():
+            # save an dictionary contains the model along with all of its results
             # save model with its name, its type and the date (with minutes) delimited with underscore
             file_name = "{}_{}_{}.sav".format(
                 name, self.model_type(name), datetime.now().strftime("%Y-%m-%d_%H-%M")
             )
-            pickle.dump(model, open(directory + file_name, "wb"))
+            pickle.dump(
+                {
+                    "model": model,
+                    "cv_results": self.model_results[name]["cv_results"],
+                },
+                open(directory + file_name, "wb"),
+            )
 
     def load_models(self, directory):
-        # load all of the fitted models from certain directory
+        # load all of the fitted models and it's results from certain directory
         self.final_models = {}
         for file in os.listdir(directory):
             if file.endswith(".sav"):
                 model = pickle.load(open(directory + file, "rb"))
-                self.final_models[file.split("_")[0]] = model
+                model_name = file.split("_")[0]
+                self.final_models[model_name] = model["model"]
+                self.model_results[model_name] = model["cv_results"]
+                # save results to f1_results
+                self.calc_model_cv_results(model_name, model["cv_results"])
 
     def show_predictions(self):
         return self.temp
 
     def save_predictions(self, file_name):
         self.temp.to_csv("{}.csv".format(file_name))
+
+    def show_available(self):
+        print(50 * "=")
+        print("You can fit your data with the following models")
+        print(50 * "=", "\n")
+        for model in [m.title() for m in self.final_models.keys()]:
+            print(model)
+        print("\n", 50 * "=", "\n")

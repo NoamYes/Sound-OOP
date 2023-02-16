@@ -148,7 +148,7 @@ class SoundObjectOriented:
             self._ML_.fit_best_model(self.hp.lbl_encoder)
 
         def evaluate_best_model(self):
-            self._ML_.evaluate_model_test()
+            self._ML_.evaluate_best_model()
 
         def show_predictions(self):
             return self._ML_.show_predictions()
